@@ -13,28 +13,32 @@ a `.db_config` file.
 
 create a new migration
 
-  $ db migration
+    $ migrit
 
 bring the default database up to the most recent migration
 
-  $ db up 
+    $ migrit up 
 
 bring the database up to a particular migration using a particular connection
 
-  $ db up --migration [migration\_timestamp] --database [database\_name]
+    $ migrit up --migration [migration\_timestamp] --database [database\_name]
 
 take the database all the way down
 
-  $ db down
+    $ migrit down
 
 take the database down to a particular migration using a particular connection.
 both flags optional
 
-  $ db down --migration [migration\_timestamp] --database [database\_name]
+    $ migrit down --migration [migration\_timestamp] --database [database\_name]
 
 ## fixtures
 
-  $ db export --from databaseName --to fixtureSet
+make a database into a series of JSON encoded fixtures 
 
-  $ db import --from fixtureSet --to databaseName
+    $ migrit export --from databaseName --to fixtureSet
+
+turn a series of JSON encoded fixtures into a database
+
+    $ migrit import --from fixtureSet --to databaseName
 
