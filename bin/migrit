@@ -3,12 +3,16 @@
 var up        = require('../lib/up')
   , down      = require('../lib/down') 
   , migration = require('../lib/migration') 
-  , args      = require('optimist').argv
+  , prompt    = require('prompt')
+  , args      = require('yargs')
+  , argv      = args.argv
   , fs        = require('q-io/fs')
   , q         = require('q')
   , config    = findConfig('.');
   ;
 
+prompt.message = '';
+prompt.delimiter = '';
 
 
 // recursively search for a config file
@@ -44,7 +48,9 @@ function findConfig(level){
         // if the file was found
         return fs.read(is_file)
           .then(function(contents){
-            return JSON.parse(contents);
+            contents = JSON.parse(contents); 
+            contents.base = is_file.replace(/\.?migrit.json/, '');
+            return contents;
           });
       }else{
         // if no file was found, try one level higher
@@ -62,15 +68,62 @@ function findConfig(level){
 // accept other command line arguments and delegate to sub-programs as necessary
 
 config.then(function(c){
-  switch(args._[0]){
+  var title
+    , schema
+    ;
+
+  switch(argv._[0]){
     case undefined:
-      console.log(c);
-      migration(c);
+      argv = args
+        .usage("Usage: $0 --title 'title for migration'")
+        .alias('t', 'title')
+        .describe('t', 'title for the migration')
+        .argv;
+      try{
+        prompt.override = args.argv;
+        prompt.start();
+
+        schema = {
+          properties: {
+            t: {
+              message: 'What will this migration be doing?'.green
+            , required: true
+            }
+          }
+        }
+
+        prompt.get(schema, function(err, result){
+          migration(result.t, c);
+        });
+      }catch(err){
+        console.log(err);
+      }
       break;
     case 'up':
-      console.log('going up');
+      argv = args
+        .usage("Usage: $0 up --max 12345 --database connection_name")
+        .alias('m', 'max')
+        .alias('d', 'database')
+        .default('m', false)
+        .default('d', 'local')
+        .describe('m', 'maximum migration to run')
+        .describe('d', 'database connection name')
+        .argv;
+
+        up(c, argv.d, argv.m);
       break;
     case 'down':
+      argv = args
+        .usage("Usage: $0 down --max 12345 --database connection_name")
+        .alias('m', 'min')
+        .alias('d', 'database')
+        .default('m', 0)
+        .default('d', 'local')
+        .describe('m', 'minimum migration to run')
+        .describe('d', 'database connection name')
+        .argv;
+
+        up(c, argv.d, argv.m);
       console.log('going down');
       break;
     default:
@@ -78,4 +131,3 @@ config.then(function(c){
       break; 
   }
 });
-

@@ -32,9 +32,10 @@
   ],
   "scripts": {},
   "dependencies": {
-    "optimist": "^0.6.1",
     "promiseus": "whtevn/promiseus",
     "q": "^1.1.1",
-    "q-io": "^1.11.6"
+    "q-io": "^1.11.6",
+    "prompt": "~0.2.14",
+    "yargs": "~1.3.3"
   }
 }

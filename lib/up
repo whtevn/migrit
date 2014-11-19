@@ -1,22 +1,43 @@
 #!/usr/bin/env node
+var fs = require('q-io/fs');
 
+var up = function(config, database, max){
+  var timestamp;
+  // set max timestamped migration to run, default to false
 
+  fs.listTree(config.base+(config.migrations||'migrations'))
+    .then(function(path){
+      // get the current database state
+      var db_state = 0;
 
-var up = function(max, config){
-// set max timestamped migration to run, default to now
+      path.forEach(function(file){
+        fs.isFile(file)
+          .then(function(is_file){
+            timestamp = +(file.match(/\/(\d*)_.*$/)[1]);
+            if(is_file && (timestamp <= max||!max)){
+              if(db_state < timestamp){
+                console.log('running', file);
+              }else{
+                console.warn('exists', file);
+              }
+            }else{
+              console.warn('skipped', file);
+            }
+          });
+      })
+    });
 
-// get database migration state
-// stored in a table named based on a value found in the config file
-// default 'database_state', field name is 'timestamp'
+  // get database migration state
+  // stored in a table named based on a value found in the config file
+  // default 'database_state', field name is 'timestamp'
 
-// get all migrations, ordered by filename
-// if the migration is labeled as newer than the database state,
-// but less than the migration limit, run each of the 'up' array
-// in the database engine of the user's choice
-// set the database state to the most recently run migration timestamp
+  // get all migrations, ordered by filename
+  // if the migration is labeled as newer than the database state,
+  // but less than the migration limit, run each of the 'up' array
+  // in the database engine of the user's choice
+  // set the database state to the most recently run migration timestamp
 
-// otherwise, skip the migration and say so, mark the timestamp
+  // otherwise, skip the migration and say so, mark the timestamp
 }
 
-// exit 
 module.exports = up;
