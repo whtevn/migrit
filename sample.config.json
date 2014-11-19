@@ -1,0 +1,38 @@
+{
+  migrations: './migrations'
+, fixtures: './fixtures'
+, database_state: 'database_state'
+, database_engine: 'mysql'
+, connections: {
+    local: {
+      host: ''
+    , port: ''
+    , user: ''
+    , pass: ''
+    }
+    testing: {
+      host: ''
+    , port: ''
+    , user: ''
+    , pass: ''
+    }
+  , staging: {
+      host: ''
+    , port: ''
+    , user: ''
+    , pass: ''
+    }
+  , beta: {
+      host: ''
+    , port: ''
+    , user: ''
+    , pass: ''
+    }
+  , production: {
+      host: ''
+    , port: ''
+    , user: ''
+    , pass: ''
+    }
+  }
+}

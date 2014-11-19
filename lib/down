@@ -1,0 +1,23 @@
+#!/usr/bin/env node
+
+/************************************/
+/* down: migrate down               */
+/************************************/
+
+// set min timestamped migration to run, default to 0
+
+// get database migration state
+// stored in a table named based on a value found in the config file
+// default 'database_state', field name is 'timestamp'
+
+// get all migrations, ordered by filename
+// if the migration is labeled as older than the database state,
+// but newer than the migration limit, run each of the 'down' array
+// in the database engine of the user's choice
+
+// set the database state to the most recently run migration timestamp
+
+// otherwise, skip the migration and say so, mark the timestamp
+
+// exit
+

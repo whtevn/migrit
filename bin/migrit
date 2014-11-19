@@ -1,0 +1,33 @@
+#!/usr/bin/env node
+
+// discover `migrations/` and `fixtures/` directories
+//
+// if the directories do not exist in the cwd,
+// traverse up until a .dbmgt_config file is found
+//
+// the first command line option tells which sub-program is being run
+
+/*****************************************/
+/* no name arguments: create a migration */
+/*****************************************/
+
+// take the current timestamp
+
+// ask the user the purpose of the migration if it is not supplied
+// --title, -t [optional]
+
+// assemble the timestamp and title as the filename of the new migration
+
+// set the default migration format
+
+format = {
+  author:      ""
+, description: ""
+, created_at:  ""
+, up:   [ ]
+, down: [ ]
+}
+
+// print the migration with description into the new file
+
+// exit
