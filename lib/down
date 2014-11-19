@@ -1,9 +1,5 @@
 #!/usr/bin/env node
 
-/************************************/
-/* down: migrate down               */
-/************************************/
-
 // set min timestamped migration to run, default to 0
 
 // get database migration state

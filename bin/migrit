@@ -1,33 +1,73 @@
 #!/usr/bin/env node
 
-// discover `migrations/` and `fixtures/` directories
-//
-// if the directories do not exist in the cwd,
-// traverse up until a .dbmgt_config file is found
-//
+var up        = require('../lib/up')
+  , down      = require('../lib/down') 
+  , migration = require('../lib/migration') 
+  , args      = require('optimist').argv
+  , fs        = require('q-io/fs')
+  , config    = findConfig('.');
+  ;
+
+
+
+// recursively search for a config file
+function findConfig(level){
+  // check to see if the level we are at is a directory
+  return fs.isDirectory(level)
+    .then(function(is_directory){
+      if(is_directory){
+        // if it is check to see if it has a .migrit.json file
+        return fs.isFile(level+'/'+'.migrit.json')
+          .then(function(is_file){
+            return is_file&&level+'/.migrit.json';
+          });
+      }else{
+        // otherwise, throw an error
+        throw('no config file found'); 
+      }
+    })
+    .then(function(is_file){
+      if(is_file){
+        // if the file was found
+        return fs.read(is_file)
+          .then(function(contents){
+            return JSON.parse(contents);
+          });
+      }else{
+        // if no file was found, try one level higher
+        return findConfig(level+'/..');
+      }
+    })
+    .fail(function(err){
+      // console log any errors
+      console.log(err);
+    });
+}
+
 // the first command line option tells which sub-program is being run
+
+// accept other command line arguments and delegate to sub-programs as necessary
 
 /*****************************************/
 /* no name arguments: create a migration */
 /*****************************************/
 
-// take the current timestamp
-
-// ask the user the purpose of the migration if it is not supplied
-// --title, -t [optional]
-
-// assemble the timestamp and title as the filename of the new migration
-
-// set the default migration format
-
-format = {
-  author:      ""
-, description: ""
-, created_at:  ""
-, up:   [ ]
-, down: [ ]
+if(args._.length == 0){
+  config.then(function(c){
+    console.log(c);
+    migration(c);
+  });
 }
 
-// print the migration with description into the new file
+/************************************/
+/* down: migrate down               */
+/************************************/
 
-// exit
+/************************************/
+/* up: migrate up                   */
+/************************************/
+
+/************************************/
+/* init: migrate init               */
+/************************************/
+// initialize the current working directory with a config file

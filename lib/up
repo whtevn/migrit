@@ -1,9 +1,8 @@
 #!/usr/bin/env node
 
-/************************************/
-/* up: migrate up                   */
-/************************************/
 
+
+var up = function(max, config){
 // set max timestamped migration to run, default to now
 
 // get database migration state
@@ -17,6 +16,7 @@
 // set the database state to the most recently run migration timestamp
 
 // otherwise, skip the migration and say so, mark the timestamp
+}
 
 // exit 
-
+module.exports = up;

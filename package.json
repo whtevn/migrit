@@ -32,6 +32,8 @@
   ],
   "scripts": {},
   "dependencies": {
-    "optimist": "^0.6.1"
+    "optimist": "^0.6.1",
+    "q-io": "^1.11.6",
+    "promiseus": "whtevn/promiseus"
   }
 }
