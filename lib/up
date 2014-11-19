@@ -1,0 +1,22 @@
+#!/usr/bin/env node
+
+
+
+var up = function(max, config){
+// set max timestamped migration to run, default to now
+
+// get database migration state
+// stored in a table named based on a value found in the config file
+// default 'database_state', field name is 'timestamp'
+
+// get all migrations, ordered by filename
+// if the migration is labeled as newer than the database state,
+// but less than the migration limit, run each of the 'up' array
+// in the database engine of the user's choice
+// set the database state to the most recently run migration timestamp
+
+// otherwise, skip the migration and say so, mark the timestamp
+}
+
+// exit 
+module.exports = up;

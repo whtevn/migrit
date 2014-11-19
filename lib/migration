@@ -1,0 +1,23 @@
+#!/usr/bin/env node
+
+// take the current timestamp
+
+// ask the user the purpose of the migration if it is not supplied
+// --title, -t [optional]
+
+// assemble the timestamp and title as the filename of the new migration
+
+// set the default migration format
+
+format = {
+  author:      ""
+, description: ""
+, created_at:  ""
+, up:   [ ]
+, down: [ ]
+}
+
+// print the migration with description into the new file
+
+// exit
+
