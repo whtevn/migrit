@@ -5,9 +5,10 @@
 , "database_engine": "mysql"
 , "connections": {
     "local": {
-      "host": ""
-    , "port": ""
-    , "user": ""
+      "host": "127.0.0.1"
+    , "database": "migration_demo"
+    , "port": "3306"
+    , "user": "root"
     , "pass": ""
     }
   , "testing": {

@@ -123,8 +123,7 @@ config.then(function(c){
         .describe('d', 'database connection name')
         .argv;
 
-        up(c, argv.d, argv.m);
-      console.log('going down');
+        down(c, argv.d, argv.m);
       break;
     default:
       console.log('show help');
