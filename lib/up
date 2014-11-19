@@ -1,22 +1,81 @@
 #!/usr/bin/env node
+var fs = require('q-io/fs')
+  , mysql = require('mysql')
+  , q     = require('q');
+  ;
 
+function up(config, database, max){
+  var timestamp
+    , db = config.connections[database]
+    , connection = mysql.createConnection(db)
+    ;
 
-
-var up = function(max, config){
-// set max timestamped migration to run, default to now
-
-// get database migration state
-// stored in a table named based on a value found in the config file
-// default 'database_state', field name is 'timestamp'
-
-// get all migrations, ordered by filename
-// if the migration is labeled as newer than the database state,
-// but less than the migration limit, run each of the 'up' array
-// in the database engine of the user's choice
-// set the database state to the most recently run migration timestamp
-
-// otherwise, skip the migration and say so, mark the timestamp
+	q.ninvoke(connection, 'query', 
+      "SELECT timestamp FROM database_state"
+    )
+    .then(function(rows){
+      return execute_migrations(config, database, max, rows[0].timestamp)
+    })
+    .catch(function(err){
+      if(err.code == 'ER_NO_SUCH_TABLE'){
+        q.ninvoke(connection, 'query',
+          "CREATE TABLE database_state (
+              timestamp int
+            , last_updated DATETIME
+            );
+            
+            INSERT INTO
+              database_state(
+                timestamp,
+                last_updated
+              ) VALUES (
+                0
+              , NOW()
+              );
+            ");
+          .then(function(){
+            connection.end();
+            execute_migrations(config, database, max, 0)
+          })
+      }else{
+        connection.end();
+        console.log('mysql failed:', err);
+      }
+    });
 }
 
-// exit 
+function execute_migrations(config, database, max, state){
+  fs.listTree(config.base+(config.migrations||'migrations'))
+    .then(function(path){
+      // get the current database state
+      var db_state = 0;
+
+      // look at each migration file under the given path
+      path.forEach(function(file){
+        fs.isFile(file)
+          .then(function(is_file){
+            // get the timestamp of the migration file
+            timestamp = +(file.match(/\/(\d*)_.*$/)[1]);
+
+            // if the path being examined is a file, and the timestamp
+            // is under the given maximum, or there is no given maximum
+            if(is_file && (timestamp <= max||!max)){
+              if(db_state < timestamp){
+                // if the migration has not already been run
+                // attempt to run the migration array
+                console.log('running', file);
+              }else{
+                // if the migration has already been run, give
+                // a message to that effect
+                console.warn('exists', file);
+              }
+            }else{
+              // skip files that are outside of the user-defined range
+              console.warn('skipped', file);
+            }
+          });
+      })
+    });
+}
+
 module.exports = up;

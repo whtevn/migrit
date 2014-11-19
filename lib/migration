@@ -1,23 +1,25 @@
 #!/usr/bin/env node
 
-// take the current timestamp
+var fs = require('q-io/fs');
 
-// ask the user the purpose of the migration if it is not supplied
-// --title, -t [optional]
+module.exports = function(title, config){
+  var timestamp = +(new Date)
+    , filename  = timestamp+"_"+title.replace(/\s/g, "_")+".json"
+    , filepath  = config.base+(config.migrations||'migrations')+'/'
+    , migration = {
+        author:      ""
+      , description: title
+      , created_at:  timestamp
+      , up:   ['']
+      , down: ['']
+      }
+    ;
 
-// assemble the timestamp and title as the filename of the new migration
+    migration = JSON.stringify(migration, null, "\t");
 
-// set the default migration format
-
-format = {
-  author:      ""
-, description: ""
-, created_at:  ""
-, up:   [ ]
-, down: [ ]
+    fs.write(filepath+filename, migration)
+      .then(function(res){
+        console.log(filepath+filename+" has been written");
+      });
 }
-
-// print the migration with description into the new file
-
-// exit
 
