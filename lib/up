@@ -8,38 +8,43 @@ function up(config, database, max){
   var timestamp
     , db = config.connections[database]
     , connection = mysql.createConnection(db)
+    , table_name = (config.state_table||'database_state')
+    , field_name = (config.state_field||'timestamp')
     ;
 
+  connection.connect();
+
 	q.ninvoke(connection, 'query', 
-      "SELECT timestamp FROM database_state"
+      "SELECT "+field_name+" FROM "+table_name
     )
     .then(function(rows){
-      return execute_migrations(config, database, max, rows[0].timestamp)
+      var state
+        ;
+      connection.end();
+      state = ((rows[0]&&rows[0].timestamp) || 0)
+      return execute_migrations(config, database, max, state)
+      
     })
     .catch(function(err){
       if(err.code == 'ER_NO_SUCH_TABLE'){
+        console.log("creating "+table_name+" table with an integer field named '"+field_name+"'");
         q.ninvoke(connection, 'query',
-          "CREATE TABLE database_state (
-              timestamp int
-            , last_updated DATETIME
-            );
-            
-            INSERT INTO
-              database_state(
-                timestamp,
-                last_updated
-              ) VALUES (
-                0
-              , NOW()
-              );
-            ");
-          .then(function(){
-            connection.end();
-            execute_migrations(config, database, max, 0)
-          })
+          "CREATE TABLE "+table_name+"("+field_name+" INT, updated_at DATETIME)"
+        )
+        .then(function(){
+          console.log("inserting initial values into "+table_name);
+          return q.ninvoke(connection, 'query',
+            "INSERT INTO "+table_name+"("+field_name+", updated_at) VALUES(0, NOW())");
+        })
+        .then(function(){
+          return execute_migrations(config, database, max, 0)
+        })
+        .catch(function(err){
+          console.log("line 43:", err);
+        });
       }else{
+        console.log('line 46:', err);
         connection.end();
-        console.log('mysql failed:', err);
       }
     });
 }

@@ -17,9 +17,16 @@ module.exports = function(title, config){
 
     migration = JSON.stringify(migration, null, "\t");
 
-    fs.write(filepath+filename, migration)
-      .then(function(res){
-        console.log(filepath+filename+" has been written");
-      });
+    fs.isDirectory(filepath)
+      .then(function(is_directory){
+        if(!is_directory){
+          return fs.makeDirectory(filepath);
+        }
+      })
+      .then(function(){
+        fs.write(filepath+filename, migration)
+        .then(function(res){
+          console.log(filepath+filename+" has been written");
+        });
+    });
 }
-
