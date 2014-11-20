@@ -22,7 +22,11 @@ function up(config, database, max){
         ;
       connection.end();
       state = ((rows[0]&&rows[0].timestamp) || 0)
-      return migrationRouter(config, database, max, state)
+      console.log("starting migrations");
+      return fs.listTree(config.base+(config.migrations||'migrations'))
+        .then(function(path){
+          return executeMigrations(config, database, max, state, path);
+        });
       
     })
     .catch(function(err){
@@ -49,23 +53,14 @@ function up(config, database, max){
     });
 }
 
-function migrationRouter(config, database, max, state){
-  console.log("starting migrations");
-  return fs.listTree(config.base+(config.migrations||'migrations'))
-    .then(function(path){
-      executeMigrations(config, database, max, state, path);
-    });
-}
-
-
-function executeMigrations(config, database, max, state, path){
-  if(path.length==0){
+function executeMigrations(config, database, max, state, migrations){
+  if(migrations.length==0){
     console.log('finished');
     return true
   }
   // get the current database state
   var db_state = 0
-    , file = path.shift();
+    , file = migrations.shift();
 
   // look at each migration file under the given path
   fs.isFile(file)
@@ -94,7 +89,7 @@ function executeMigrations(config, database, max, state, path){
       }
     })
     .then(function(){
-      executeMigrations(config, database, max, state, path);
+      executeMigrations(config, database, max, state, migrations);
     });
 }
 
