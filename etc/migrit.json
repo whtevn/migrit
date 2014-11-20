@@ -1,9 +1,5 @@
 {
-  "migrations": "migrations"
-, "fixtures": "fixtures"
-, "database_state": "database_state"
-, "database_engine": "mysql"
-, "connections": {
+  "connections": {
     "local": {
       "host": "127.0.0.1"
     , "database": "migration_demo"
