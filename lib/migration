@@ -1,8 +1,18 @@
 #!/usr/bin/env node
 
-var fs = require('q-io/fs');
+var fs = require('q-io/fs')
+  , Migration = {}
+  ;
 
-module.exports = function(title, config){
+Migration.getTimestampFromFilename = function(file){
+  var match = file.match(/\/(\d*)_.*$/); 
+  if(match){
+    match = +(match[1]);
+  }
+  return match;
+}
+
+Migration.create = function(title, config){
   var timestamp = +(new Date)
     , filename  = timestamp+"_"+title.replace(/\s/g, "_")+".json"
     , filepath  = config.base+(config.migrations||'migrations')+'/'
@@ -30,3 +40,42 @@ module.exports = function(title, config){
         });
     });
 }
+
+Migration.runSet = function (max, state, migrations){
+  if(migrations && migrations.length==0){
+    // end execution if there are no more migrations to run
+    console.log('finished');
+    return true
+  }
+
+  // look at each migration file under the given path
+  return fs.isFile(migrations[0])
+    .then(function(is_file){
+      // get the current database state
+      var skip      = Migration.inRange(max, timestamp, state)
+        , timestamp = Migration.getTimestampFromFilename(migrations[0])
+        , file      = migrations.shift()
+        ;
+      if(is_file && !file.match(/\/\.[^\/]*$/)){
+        // if the path being examined is a file, and the timestamp
+        // is under the given maximum, or there is no given maximum
+        timestamp = Migration.getStateFor(timestamp, migrations);
+
+        return Migration.run(file, timestamp, skip);
+      }
+    })
+    .then(function(){
+      return Migration.runSet(max, state, migrations);
+    });
+}
+
+Migration.run = function(file, timestamp, skip){
+  return fs.read(file)
+    .then(function(migration){
+      migration = JSON.parse(migration);
+      console.log((skip||'running'.magenta), (timestamp&&timestamp.toString().grey), migration.description.green);
+
+      return Migration.sql.batch(timestamp, migration[Migration.direction], skip)
+    });
+}
+module.exports = Migration; 

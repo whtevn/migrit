@@ -1,19 +1,61 @@
 #!/usr/bin/env node
+var fs  = require('q-io/fs')
+  , sql = require('./sql')
+  , migration = require('./migration')
+  ;
 
-// set min timestamped migration to run, default to 0
+// read and run migrations files in order 
+// to bring a database at a particular connection up
+// to whatever chosen maximum. 
 
-// get database migration state
-// stored in a table named based on a value found in the config file
-// default 'database_state', field name is 'timestamp'
+// config - an object literal with database connection information 
+//          and other connection information
+function up(config, database, min){
+  var timestamp
 
-// get all migrations, ordered by filename
-// if the migration is labeled as older than the database state,
-// but newer than the migration limit, run each of the 'down' array
-// in the database engine of the user's choice
+  migration.sql = sql.connect(config, database);
 
-// set the database state to the most recently run migration timestamp
+  migration.direction = 'down';
 
-// otherwise, skip the migration and say so, mark the timestamp
+  migration.getStateFor = function(timestamp, migrations){
+    migrations = migrations.map(function(mig){
+      return migration.getTimestampFromFilename(mig);
+    }).filter(function(mig) {
+      return mig
+    });
+    return migrations[migrations.length-1];
+  }
 
-// exit
+  migration.inRange = function(min, timestamp, state){
+    var skip;
+    if(timestamp > min || !min){
+      if(timestamp > state){
+        skip = 'exists'.grey
+      }
+    }else{
+      skip = 'skipped'.grey
+    }
 
+    return skip;
+  }
+
+  // promisified mysql query, get the database state
+	sql.getDBState()
+    .then(function(state){
+      console.log("starting migrations");
+      // get the migration files
+      return fs.listTree(config.base+(config.migrations||'migrations'))
+        .then(function(path){
+          // and execute them in order
+          return migration.runSet(min, state, path.reverse())
+            .then(function(){
+              sql.connection.end();
+            });
+        });
+      
+    })
+}
+
+
+
+module.exports = up;
