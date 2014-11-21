@@ -76,7 +76,7 @@ which will prompt you for your migration's puprose
     $ migrit -t 'set up users table'
 
 this will create a new migration file named something like
-`1416595944375_my_very_first_migration`, and inside that file will be some json
+`1416595944375_set_up_users_table`, and inside that file will be some json
 within which you will add your sql to define the migration
 
 for example:
