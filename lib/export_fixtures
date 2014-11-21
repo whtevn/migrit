@@ -1,4 +1,20 @@
 #!/usr/bin/env node
+var fs  = require('q-io/fs')
+  , sql = require('./sql')
+  ;
+
+
+function exp(config, database, fixtures){
+  console.log("yo");
+  sql.connect(config, database);
+  sql.query("SHOW TABLES")
+    .then(function(rows){
+      rows.forEach(function(table){
+        console.log(table);
+      });
+    })
+    ;
+}
     // get the table name
     // get the table's primary key data
 
@@ -30,3 +46,4 @@
 
     // close file
 
+module.export = exp;
