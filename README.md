@@ -62,8 +62,8 @@ optional args:
       }
     }
 
-connections are arbitrary. If no --database tag is specified, 'local' will be
-assumed
+connections are arbitrary. If no `--database` tag is specified,
+`--database local` will be assumed
 
 ## create migrations
 
