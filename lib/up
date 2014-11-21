@@ -12,22 +12,28 @@ var fs = require('q-io/fs')
 //          and other connection information
 function up(config, database, max){
   var timestamp
+
     // choose the database connection information based on the given config
     // and connection name
     , db = config.connections[database]
+
     // create a new mysql connection
     // TODO: allow different database engines
     , connection = mysql.createConnection(db)
+
     // set the table name according to the config file,
     // default to 'database_state'
     , table_name = (config.state_table||'database_state')
+
     // set the field name according to the config file,
     // default to 'timestamp'
     , field_name = (config.state_field||'timestamp')
     ;
 
-  // connect to database
-  connection.connect();
+  // ensure defaulted names persist through the app
+  config.state_table = table_name;
+  config.state_field = field_name;
+
 
   // promisified mysql query, get the database state
 	q.ninvoke(connection, 'query', 
@@ -35,17 +41,19 @@ function up(config, database, max){
     )
     .then(function(rows){
       // retrieve the current database state, default to 0
-      var state = ((rows[0]&&rows[0][config.state_field]) || 0);
+      var state = ((rows[0][0]&&rows[0][0][config.state_field]) || 0);
 
       // end the database connection
-      connection.end();
 
       console.log("starting migrations");
-      // git the migration files
+      // get the migration files
       return fs.listTree(config.base+(config.migrations||'migrations'))
         .then(function(path){
           // and execute them in order
-          return executeMigrations(config, database, max, state, path);
+          return executeMigrations(config, connection, database, max, state, path)
+            .then(function(){
+              //connection.end();
+            });
         });
       
     })
@@ -56,7 +64,7 @@ function up(config, database, max){
 
         // if no state table is found, attempt to create it
         q.ninvoke(connection, 'query',
-          "CREATE TABLE "+table_name+"("+field_name+" INT, updated_at DATETIME)"
+          "CREATE TABLE "+table_name+"("+field_name+" VARCHAR(255), updated_at DATETIME)"
         )
         .then(function(){
           console.log("inserting initial values into "+table_name);
@@ -69,23 +77,21 @@ function up(config, database, max){
           // if no state table was found, but was successfully created and populated
           // end the connection
           // and try to run the initial request again
-          connection.end();
           return up(config, database, max);
         })
         .catch(function(err){
           // error out if no state table was found and it was unable to be corrected
-          console.log("line 43:", err);
+          console.log("line 43:".red, err);
         });
       }else{
         // error out if there was some other reason for the state retrieval error
-        console.log('line 46:', err);
-        connection.end();
+        console.log('line 46:'.red, err);
       }
     });
 }
 
-function executeMigrations(config, database, max, state, migrations){
-  if(migrations.length==0){
+function executeMigrations(config, connection, database, max, state, migrations){
+  if(migrations && migrations.length==0){
     // end execution if there are no more migrations to run
     console.log('finished');
     return true
@@ -95,9 +101,9 @@ function executeMigrations(config, database, max, state, migrations){
   var file = migrations.shift();
 
   // look at each migration file under the given path
-  fs.isFile(file)
+  return fs.isFile(file)
     .then(function(is_file){
-      if(is_file){
+      if(is_file && !file.match(/\/\.[^\/]*$/)){
         // get the timestamp of the migration file
         timestamp = +(file.match(/\/(\d*)_.*$/)[1]);
 
@@ -107,36 +113,55 @@ function executeMigrations(config, database, max, state, migrations){
           if(state < timestamp){
             // if the migration has not already been run
             // attempt to run the migration array
-            return run(file, timestamp);
+            return run(config, file, timestamp, null, connection);
           }else{
             // if the migration has already been run, give
             // a message to that effect
-            return run(file, timestamp, 'exists');
+            return run(config, file, timestamp, 'exists');
           }
         }else{
           // skip files that are outside of the user-defined range
-          return run(file, timestamp, 'skipped');
+          return run(config, file, timestamp, 'skipped');
         }
       }
     })
     .then(function(){
-      executeMigrations(config, database, max, state, migrations);
+      executeMigrations(config, connection, database, max, state, migrations);
     });
 }
 
-function run(file, timestamp, skip){
+function run(config, file, timestamp, skip, connection){
   return fs.read(file)
     .then(function(migration){
       migration = JSON.parse(migration);
-      console.log((skip||'running').cyan, migration.created_at, migration.description.green);
+      console.log((skip||'running').cyan, timestamp.toString().grey, migration.description.green);
 
-      if(!skip){
-        migration.up.forEach(function(statement){
-          console.log(statement);
-        });
-      }
-      return migration;
+      return SQLBatch(config, connection, timestamp, migration.up, skip)
     });
+}
+
+function SQLBatch(config, connection, state, statements, skip){
+  if(statements.length == 0 || skip){
+return true;
+}
+
+  var statement = statements.shift()
+    , table_name = config.state_table
+    , field_name = config.state_field
+    ;
+  console.log("\t"+statement.yellow);
+  return q.ninvoke(connection, 'query', statement)
+    .then(function(){
+      return q.ninvoke(connection, 'query',
+        "UPDATE "+table_name+" SET "+field_name+"= '"+state+"'"
+      );
+    })
+    .then(function(){
+      return SQLBatch(statements);
+    })
+    .catch(function(err){
+      console.log("\t\tline 146:".red, err);
+    })
 }
 
 module.exports = up;
