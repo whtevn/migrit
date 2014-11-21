@@ -45,6 +45,20 @@ optional args:
         , "user": "root"
         , "pass": ""
         }
+      , "staging": {
+          "host": "my.fancy.sqlserver.com"
+        , "database": "migration_staging"
+        , "port": "6606"
+        , "user": "mySqlAdmin"
+        , "pass": "super5ecret"
+        }
+      , "etc": {
+          "host": "my.fancy.sqlserver.com"
+        , "database": "migration_etc"
+        , "port": "6606"
+        , "user": "mySqlAdmin"
+        , "pass": "super5ecret"
+        }
       }
     }
 
