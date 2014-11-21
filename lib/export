@@ -1,0 +1,32 @@
+#!/usr/bin/env node
+    // get the table name
+    // get the table's primary key data
+
+    // assign the column name to the first key entry
+    // if none exists, make the key a hashed concat of all fields
+
+    // start a new fixture file 
+    // open the file with a {
+
+    // select all items from the table
+
+    // loop over result to write each entry as json
+
+        // if the primary key column name is set
+        // store the id of this particular entry
+
+        // if no such primary key exists, join the values
+        // and then hash the values to store that as the id
+
+      // unset null values
+
+      // build the entry as nice looking json
+
+      // write the entry with its id
+
+      // ensure that the last entry does not have a comma
+
+    // end the file with a }
+
+    // close file
+
