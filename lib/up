@@ -52,7 +52,7 @@ function up(config, database, max){
           // and execute them in order
           return executeMigrations(config, connection, database, max, state, path)
             .then(function(){
-              //connection.end();
+              connection.end();
             });
         });
       
@@ -98,7 +98,10 @@ function executeMigrations(config, connection, database, max, state, migrations)
   }
 
   // get the current database state
-  var file = migrations.shift();
+  var timestamp
+    , skip
+    , file = migrations.shift()
+    ;
 
   // look at each migration file under the given path
   return fs.isFile(file)
@@ -111,22 +114,16 @@ function executeMigrations(config, connection, database, max, state, migrations)
         // is under the given maximum, or there is no given maximum
         if(timestamp <= max || !max){
           if(state < timestamp){
-            // if the migration has not already been run
-            // attempt to run the migration array
-            return run(config, file, timestamp, null, connection);
-          }else{
-            // if the migration has already been run, give
-            // a message to that effect
-            return run(config, file, timestamp, 'exists');
+            skip = 'exists'
           }
         }else{
-          // skip files that are outside of the user-defined range
-          return run(config, file, timestamp, 'skipped');
+          skip = 'exists'
         }
+        return run(config, file, timestamp, skip);
       }
     })
     .then(function(){
-      executeMigrations(config, connection, database, max, state, migrations);
+      return executeMigrations(config, connection, database, max, state, migrations);
     });
 }
 
