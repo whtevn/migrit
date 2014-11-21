@@ -51,19 +51,64 @@ optional args:
 connections are arbitrary. If no --database tag is specified, 'local' will be
 assumed
 
-## migrations
+## create migrations
 
 create a new migration
 
     $ migrit
 
-bring the default database up to the most recent migration
+which will prompt you for your migration's puprose
+
+    $ migrit -t 'set up users table'
+
+this will create a new migration file named something like
+`1416595944375_my_very_first_migration`, and inside that file will be some json
+within which you will add your sql to define the migration
+
+for example:
+
+    {
+      "author": "Evan Short",
+      "description": "set up users table",
+      "created_at": 1416595944375,
+      "up": [
+        "CREATE TABLE users(user_id VARCHAR(255), created_at DATETIME)"
+      ],
+      "down": [
+        "DROP TABLE users"
+      ]
+    }
+
+or, because the sql blocks are defined in arrays, you may issue multiple sql
+commands
+
+    {
+      "author": "Evan Short",
+      "description": "set up users table",
+      "created_at": 1416595944375,
+      "up": [
+        "CREATE TABLE users(user_id VARCHAR(255), created_at DATETIME)"
+      , "alter table users add name varchar(255)"
+      ],
+      "down": [
+        "alter table users drop column name"
+      , "DROP TABLE users"
+      ]
+    }
+
+## bring up the database
+
+once you have created a migration, you will want to apply it to your database
 
     $ migrit up 
 
 bring the database up to a particular migration using a particular connection
 
-    $ migrit up --migration [migration\_timestamp] --database [database\_name]
+    $ migrit up --max [migration_timestamp] --database [database_name]
+
+without the `--database` option, migrit assumes you mean `local`
+
+## bring down the database
 
 take the database all the way down
 
@@ -72,7 +117,9 @@ take the database all the way down
 take the database down to a particular migration using a particular connection.
 both flags optional
 
-    $ migrit down --migration [migration\_timestamp] --database [database\_name]
+    $ migrit down --min [migration_timestamp] --database [database_name]
+
+without the `--database` option, migrit assumes you mean `local`
 
 ## fixtures
 
