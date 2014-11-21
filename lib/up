@@ -95,9 +95,9 @@ function executeMigrations(config, database, max, state, migrations){
   var file = migrations.shift();
 
   // look at each migration file under the given path
-  fs.isFile(file)
+  return fs.isFile(file)
     .then(function(is_file){
-      if(is_file){
+      if(is_file && !file.match(/\/\.[^\/]*$/)){
         // get the timestamp of the migration file
         timestamp = +(file.match(/\/(\d*)_.*$/)[1]);
 
@@ -130,13 +130,24 @@ function run(file, timestamp, skip){
       migration = JSON.parse(migration);
       console.log((skip||'running').cyan, migration.created_at, migration.description.green);
 
-      if(!skip){
-        migration.up.forEach(function(statement){
-          console.log(statement);
-        });
-      }
-      return migration;
+      return SQLBatch(migration.up, skip)
     });
+}
+
+function SQLBatch(statements, skip){
+  if(statements.length == 0 || skip){
+    return true;
+  }
+  var statement = statements.shift();
+  console.log(statement);
+  return SQLBatch(statements);
+  /*return q.ninvoke(connection, 'query', statement)
+    .then(function(){
+      return SQLBatch(statements);
+    })
+    .catch(function(err){
+      console.log(err);
+    });*/
 }
 
 module.exports = up;
