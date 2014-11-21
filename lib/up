@@ -1,7 +1,7 @@
 #!/usr/bin/env node
-var fs = require('q-io/fs')
-  , mysql = require('mysql')
-  , q     = require('q');
+var fs  = require('q-io/fs')
+  , sql = require('./sql')
+  , migration = require('./migration')
   ;
 
 // read and run migrations files in order 
@@ -13,152 +13,27 @@ var fs = require('q-io/fs')
 function up(config, database, max){
   var timestamp
 
-    // choose the database connection information based on the given config
-    // and connection name
-    , db = config.connections[database]
+  migration.sql = sql.connect(config, database);
 
-    // create a new mysql connection
-    // TODO: allow different database engines
-    , connection = mysql.createConnection(db)
-
-    // set the table name according to the config file,
-    // default to 'database_state'
-    , table_name = (config.state_table||'database_state')
-
-    // set the field name according to the config file,
-    // default to 'timestamp'
-    , field_name = (config.state_field||'timestamp')
-    ;
-
-  // ensure defaulted names persist through the app
-  config.state_table = table_name;
-  config.state_field = field_name;
-
+  migration.direction = 'up';
 
   // promisified mysql query, get the database state
-	q.ninvoke(connection, 'query', 
-      "SELECT "+field_name+" FROM "+table_name
-    )
-    .then(function(rows){
-      // retrieve the current database state, default to 0
-      var state = ((rows[0][0]&&rows[0][0][config.state_field]) || 0);
-
-      // end the database connection
-
+	sql.getDBState()
+    .then(function(state){
       console.log("starting migrations");
       // get the migration files
       return fs.listTree(config.base+(config.migrations||'migrations'))
         .then(function(path){
           // and execute them in order
-          return executeMigrations(config, connection, database, max, state, path)
+          return migration.runSet(max, state, path)
             .then(function(){
-              connection.end();
+              sql.connection.end();
             });
         });
       
     })
-    .catch(function(err){
-
-      if(err.code == 'ER_NO_SUCH_TABLE'){
-        console.log("creating "+table_name+" table with an integer field named '"+field_name+"'");
-
-        // if no state table is found, attempt to create it
-        q.ninvoke(connection, 'query',
-          "CREATE TABLE "+table_name+"("+field_name+" VARCHAR(255), updated_at DATETIME)"
-        )
-        .then(function(){
-          console.log("inserting initial values into "+table_name);
-
-          // and then populate it with an appropriate first row
-          return q.ninvoke(connection, 'query',
-            "INSERT INTO "+table_name+"("+field_name+", updated_at) VALUES(0, NOW())");
-        })
-        .then(function(){
-          // if no state table was found, but was successfully created and populated
-          // end the connection
-          // and try to run the initial request again
-          return up(config, database, max);
-        })
-        .catch(function(err){
-          // error out if no state table was found and it was unable to be corrected
-          console.log("line 43:".red, err);
-        });
-      }else{
-        // error out if there was some other reason for the state retrieval error
-        console.log('line 46:'.red, err);
-      }
-    });
 }
 
-function executeMigrations(config, connection, database, max, state, migrations){
-  if(migrations && migrations.length==0){
-    // end execution if there are no more migrations to run
-    console.log('finished');
-    return true
-  }
 
-  // get the current database state
-  var timestamp
-    , skip
-    , file = migrations.shift()
-    ;
-
-  // look at each migration file under the given path
-  return fs.isFile(file)
-    .then(function(is_file){
-      if(is_file && !file.match(/\/\.[^\/]*$/)){
-        // get the timestamp of the migration file
-        timestamp = +(file.match(/\/(\d*)_.*$/)[1]);
-
-        // if the path being examined is a file, and the timestamp
-        // is under the given maximum, or there is no given maximum
-        if(timestamp <= max || !max){
-          if(state < timestamp){
-            skip = 'exists'
-          }
-        }else{
-          skip = 'exists'
-        }
-        return run(config, file, timestamp, skip);
-      }
-    })
-    .then(function(){
-      return executeMigrations(config, connection, database, max, state, migrations);
-    });
-}
-
-function run(config, file, timestamp, skip, connection){
-  return fs.read(file)
-    .then(function(migration){
-      migration = JSON.parse(migration);
-      console.log((skip||'running').cyan, timestamp.toString().grey, migration.description.green);
-
-      return SQLBatch(config, connection, timestamp, migration.up, skip)
-    });
-}
-
-function SQLBatch(config, connection, state, statements, skip){
-  if(statements.length == 0 || skip){
-return true;
-}
-
-  var statement = statements.shift()
-    , table_name = config.state_table
-    , field_name = config.state_field
-    ;
-  console.log("\t"+statement.yellow);
-  return q.ninvoke(connection, 'query', statement)
-    .then(function(){
-      return q.ninvoke(connection, 'query',
-        "UPDATE "+table_name+" SET "+field_name+"= '"+state+"'"
-      );
-    })
-    .then(function(){
-      return SQLBatch(statements);
-    })
-    .catch(function(err){
-      console.log("\t\tline 146:".red, err);
-    })
-}
 
 module.exports = up;

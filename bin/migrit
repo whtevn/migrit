@@ -2,7 +2,7 @@
 
 var up        = require('../lib/up')
   , down      = require('../lib/down') 
-  , migration = require('../lib/migration') 
+  , migration = require('../lib/migration').create
   , prompt    = require('prompt')
   , args      = require('yargs')
   , argv      = args.argv
