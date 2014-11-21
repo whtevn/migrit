@@ -52,16 +52,16 @@ Migration.runSet = function (max, state, migrations){
   return fs.isFile(migrations[0])
     .then(function(is_file){
       // get the current database state
-      var skip      = Migration.inRange(max, timestamp, state)
-        , timestamp = Migration.getTimestampFromFilename(migrations[0])
+      var display = Migration.getTimestampFromFilename(migrations[0])
+        , skip      = Migration.inRange(max, display, state)
         , file      = migrations.shift()
         ;
       if(is_file && !file.match(/\/\.[^\/]*$/)){
         // if the path being examined is a file, and the timestamp
         // is under the given maximum, or there is no given maximum
-        timestamp = Migration.getStateFor(timestamp, migrations);
+        timestamp = Migration.getStateFor(display, migrations);
 
-        return Migration.run(file, timestamp, skip);
+        return Migration.run(file, timestamp, skip, display);
       }
     })
     .then(function(){
@@ -69,11 +69,11 @@ Migration.runSet = function (max, state, migrations){
     });
 }
 
-Migration.run = function(file, timestamp, skip){
+Migration.run = function(file, timestamp, skip, display){
   return fs.read(file)
     .then(function(migration){
       migration = JSON.parse(migration);
-      console.log((skip||'running'.magenta), (timestamp&&timestamp.toString().grey), migration.description.green);
+      console.log((skip||'running'.magenta), (display&&display.toString().grey), migration.description.green);
 
       return Migration.sql.batch(timestamp, migration[Migration.direction], skip)
     });

@@ -23,7 +23,7 @@ function up(config, database, min){
     }).filter(function(mig) {
       return mig
     });
-    return migrations[migrations.length-1];
+    return migrations[migrations.length-1]||0;
   }
 
   migration.inRange = function(min, timestamp, state){
