@@ -1,13 +1,55 @@
 Purpose
 -------
-Manage database migrations and fixtures
+Iterative Schema Migrations - currently only works with MySQL, but future plans
+include expanding to other databases
 
 Use
 ---
 
-db expects a `migrations/` and `fixtures/` directory in the current working
-directory. If these do not exist, will traverse up directories until it finds
-a `.db_config` file.
+## config file
+    
+migrit expects to find a `migrit.json` or `.migrit.json` file to give it
+information about where and how to connect to a database, how to find the
+state of the schema
+
+it will look in all directories above your current directory, and all
+directories named `etc/` inside those directories. If none is found, it will
+error out
+
+minimum migrit.json file:
+
+    {
+      "connections": {
+        "local": {
+          "host": "127.0.0.1"
+        , "database": "migration_demo"
+        , "port": "3306"
+        , "user": "root"
+        , "pass": ""
+        }
+      }
+    }
+
+optional args:
+
+    {
+      "state_table": "database_state"  // name of table migrit watches for state
+    , "state_field": "timestamp"       // field with database state in state_table
+    , "migrations" : "./migrations"    // path to migrations dir, relative to config
+    , "fixtures"   : "./fixtures"      // path to fixtures dir, relative to config
+    , "connections": {
+        "local": {
+          "host": "127.0.0.1"
+        , "database": "migration_demo"
+        , "port": "3306"
+        , "user": "root"
+        , "pass": ""
+        }
+      }
+    }
+
+connections are arbitrary. If no --database tag is specified, 'local' will be
+assumed
 
 ## migrations
 
