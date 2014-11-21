@@ -4,6 +4,13 @@ var fs = require('q-io/fs')
   , Migration = {}
   ;
 
+Migration.getTimestampFromFilename = function(file){
+  var match = file.match(/\/(\d*)_.*$/); 
+  if(match){
+    match = +(match[1]);
+  }
+  return match;
+}
 
 Migration.create = function(title, config){
   var timestamp = +(new Date)
@@ -41,28 +48,18 @@ Migration.runSet = function (max, state, migrations){
     return true
   }
 
-  // get the current database state
-  var timestamp
-    , skip
-    , file = migrations.shift()
-    ;
-
   // look at each migration file under the given path
-  return fs.isFile(file)
+  return fs.isFile(migrations[0])
     .then(function(is_file){
+      // get the current database state
+      var skip      = Migration.inRange(max, timestamp, state)
+        , timestamp = Migration.getTimestampFromFilename(migrations[0])
+        , file      = migrations.shift()
+        ;
       if(is_file && !file.match(/\/\.[^\/]*$/)){
-        // get the timestamp of the migration file
-        timestamp = +(file.match(/\/(\d*)_.*$/)[1]);
-
         // if the path being examined is a file, and the timestamp
         // is under the given maximum, or there is no given maximum
-        if(timestamp <= max || !max){
-          if(timestamp <= state){
-            skip = 'exists'.grey
-          }
-        }else{
-          skip = 'skipped'.grey
-        }
+        timestamp = Migration.getStateFor(timestamp, migrations);
 
         return Migration.run(file, timestamp, skip);
       }
@@ -76,7 +73,7 @@ Migration.run = function(file, timestamp, skip){
   return fs.read(file)
     .then(function(migration){
       migration = JSON.parse(migration);
-      console.log((skip||'running'.magenta), timestamp.toString().cyan, migration.description.green);
+      console.log((skip||'running'.magenta), (timestamp&&timestamp.toString().grey), migration.description.green);
 
       return Migration.sql.batch(timestamp, migration[Migration.direction], skip)
     });

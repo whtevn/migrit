@@ -22,7 +22,7 @@ sql = {
 , getDBState: function(){
     return sql.query("SELECT "+sql.config.state_field+" FROM "+sql.config.state_table)
       .then(function(rows){
-        return ((rows[0][0]&&rows[0][0][sql.config.state_field]) || 0);
+        return ((rows[0][0]&&+(rows[0][0][sql.config.state_field])) || 0);
       })
       .catch(function(err){
         if(err.code == 'ER_NO_SUCH_TABLE'){
@@ -38,7 +38,7 @@ sql = {
 }
 
 , batch: function(state, statements, skip){
-    if((statements && statements.length == 0) || skip){
+    if((!statements || statements.length == 0) || skip){
       return true;
     }
 
@@ -56,6 +56,7 @@ sql = {
       })
       .catch(function(err){
         console.log("\t\tlib/sql".red, "line 58:".red, err.message);
+        console.log(err);
       })
   }
 

@@ -17,6 +17,23 @@ function up(config, database, max){
 
   migration.direction = 'up';
 
+  migration.getStateFor = function(timestamp){
+    return timestamp;
+  }
+
+  migration.inRange = function(max, timestamp, state){
+    var skip;
+    if(timestamp <= max || !max){
+      if(timestamp <= state){
+        skip = 'exists'.grey
+      }
+    }else{
+      skip = 'skipped'.grey
+    }
+
+    return skip;
+  }
+
   // promisified mysql query, get the database state
 	sql.getDBState()
     .then(function(state){
