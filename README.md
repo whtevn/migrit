@@ -147,7 +147,7 @@ turn a series of JSON encoded fixtures into a database
 
 # Next Features
 
-- bring up database from scratch on fixture import
+- migrate database to appropriate place based on database state file on import
   - assume testing database instead of local on fixture import
 
 - migrate up and down by n migrations, rather than exclusively by tag
