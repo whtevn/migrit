@@ -150,11 +150,11 @@ turn a series of JSON encoded fixtures into a database
 - bring up database from scratch on fixture import
   - assume testing database instead of local on fixture import
 
+- migrate up and down by n migrations, rather than exclusively by tag
+  - discover the migration key in bin/migrit if --num is set, set min/max accordingly and call normally
+
 - migration scripts for data management
   - up and down scripts
   - before and after for each
-
-- migrate up and down by n migrations, rather than exclusively by tag
-  - discover the migration key in bin/migrit if --num is set, set min/max accordingly and call normally
 
 - automated schema comparison to ensure "up" and "down" scripts cancel each other out

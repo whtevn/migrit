@@ -1,0 +1,73 @@
+#!/usr/bin/env node
+  var Importer = {}
+    , fs = require('q-io/fs')
+    , sql = require('./sql')
+    , _  = require('underscore')
+    ;
+
+Importer.print = function(config, database, name){
+  var filepath  = config.base+(config.fixtures||'fixtures')+'/'+name+'/'
+    ;
+  Importer.config = config;
+  sql.connect(config, database);
+  return fs.listTree(filepath)
+    .then(function(path){
+      Importer.execute(path);
+    })
+    .catch(function(err){
+      console.log(err);
+    });
+}
+
+Importer.execute = function(tables){
+  if(!tables || tables.length == 0){ return true; }
+
+  var table = tables.shift();
+  fs.isFile(table)
+    .then(function(is_file){
+      if(is_file && !table.match(/\/\.[^\/]*$/)){
+        return fs.read(table)
+            .then(function(contents){
+              contents = JSON.parse(contents);
+              table = table.match(/\/([^\/]*).json$/)[1];
+              return Importer.write2Table(table, _.values(contents));
+
+            });
+      }
+    })
+    .then(function(){
+      return Importer.execute(tables);
+    })
+    .catch(function(err){
+      console.log(err.stack);
+    });
+}
+
+Importer.write2Table = function(table, contents){
+    if(!contents || contents.length == 0) return true; 
+    var row = _.omit(contents.shift(), function(value, key, obj){
+          return (!value && !(value == 0 || value == ''));
+        })
+      , fields = _.keys(row).join(", ")
+      , values = _.values(row)
+      , query 
+      ;
+
+      values = values.filter(function(field){
+          return (field || field == 0 || field == '')
+        })
+        .map(function(field){
+          return "'"+field+"'"
+        }).join(", ");
+
+      if(table == Importer.config.state_table){
+        return true
+      }else{
+        return sql.query("INSERT INTO "+table+"("+fields+")VALUES("+values+")")
+           .then(function(){;
+              return Importer.write2Table(table, contents);
+            });
+      }
+}
+
+module.exports = Importer;

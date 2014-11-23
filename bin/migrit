@@ -3,7 +3,8 @@
 var up        = require('../lib/up')
   , down      = require('../lib/down') 
   , migration = require('../lib/migration').create
-  , fix_export= require('../lib/export_fixtures').generate
+  , exporter  = require('../lib/export_fixtures').generate
+  , importer  = require('../lib/import_fixtures').print
   , prompt    = require('prompt')
   , args      = require('yargs')
   , argv      = args.argv
@@ -51,6 +52,10 @@ function findConfig(level){
           .then(function(contents){
             contents = JSON.parse(contents); 
             contents.base = is_file.replace(/\.?migrit.json/, '');
+            contents.state_table = contents.state_table||'database_state';
+            contents.state_field = contents.state_field||'timestamp';
+            contents.migrations  = contents.migrations||'migrations'
+            contents.fixtures    = contents.fixtures||'fixtures'
             return contents;
           });
       }else{
@@ -128,6 +133,18 @@ config.then(function(c){
       break;
     case 'export':
       argv = args
+        .usage("Usage: $0 export --fixture set_name --database connection_name")
+        .alias('f', 'fixture')
+        .alias('d', 'database')
+        .default('f', 'default')
+        .default('d', 'local')
+        .describe('f', 'name of fixture set')
+        .describe('d', 'database connection name')
+        .argv;
+      exporter(c, argv.d, argv.f);
+      break;
+    case 'import':
+      argv = args
         .usage("Usage: $0 import --fixture set_name --database connection_name")
         .alias('f', 'fixture')
         .alias('d', 'database')
@@ -136,7 +153,7 @@ config.then(function(c){
         .describe('f', 'name of fixture set')
         .describe('d', 'database connection name')
         .argv;
-      fix_export(c, argv.d, argv.f);
+      importer(c, argv.d, argv.f);
       break;
     default:
       console.log('show help');

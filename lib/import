@@ -1,8 +1,0 @@
-#!/usr/bin/env node
-  // read each file from the fixtures directory
-    // get the name of the table from the file
-    // drop everything from the table
-    // decode the json
-    // loop over the entries
-      // insert each into the file's database table 
-
