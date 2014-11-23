@@ -1,49 +1,90 @@
 #!/usr/bin/env node
 var fs  = require('q-io/fs')
   , sql = require('./sql')
+  , q   = require('q')
+  , objVals = require('underscore').values
+  , sha1= require('sha1')
+  , Exporter
   ;
 
-
-function exp(config, database, fixtures){
-  console.log("yo");
-  sql.connect(config, database);
-  sql.query("SHOW TABLES")
-    .then(function(rows){
-      rows.forEach(function(table){
-        console.log(table);
+Exporter = {
+  generate: function (config, database, fixtures){
+    Exporter.config = config;
+    Exporter.database = database;
+    Exporter.fixtures = fixtures;
+    Exporter.filepath = config.base+(config.fixtures||'fixtures')+'/'+fixtures+"/";
+    var snapshots = []
+      ;
+    sql.connect(config, database);
+    // check to see if the fixtures directory exists
+    // if not, create it
+    fs.isDirectory(Exporter.filepath)
+      .then(function(is_directory){
+        if(!is_directory){
+          return fs.makeTree(Exporter.filepath);
+        }
+      })
+      .then(function(){
+        return sql.query("SHOW TABLES")
+      })
+      .then(function(tables){
+        tables = tables.map(function(table){
+          return table['Tables_in_'+config.connections[database].database]
+        });
+        return Exporter.snapshot(tables);
+      })
+      .then(function(){
+        sql.connection.end();
       });
+  }
+
+, snapshot: function(tables){
+    if(!tables || tables.length == 0){
+      return true;
+    }
+    var table = tables.shift();
+    return q.all([
+      sql.query(
+        "SHOW INDEX FROM "+table
+      )
+    , sql.query(
+        "SELECT * FROM "+table
+      )
+    ]).then(function(rows){
+      var db_info = rows[0]
+        , fixture_data = rows[1]
+        , key_field
+        ;
+      if(db_info.length > 0){
+        key_field = db_info[0].Column_name;
+      }
+      return Exporter.write(table, key_field, fixture_data);
     })
-    ;
+    .then(function(){
+      return Exporter.snapshot(tables)
+    })
+    .catch(function(err){
+      console.log(err);
+    })
+  }
+, write: function(table, key_field, data){
+    var filename = Exporter.filepath+table+".json" 
+      , fixture_set = {}
+      ;
+
+    data.forEach(function(item){
+      if(key_field){
+        id = item[key_field];
+      }else{
+        id = sha1(objVals(item).join(""));
+      }
+      fixture_set[id] = item
+    });
+    
+    fixture_set = JSON.stringify(fixture_set, null, "\t");
+    return fs.write(filename, fixture_set)
+        
+  }
 }
-    // get the table name
-    // get the table's primary key data
 
-    // assign the column name to the first key entry
-    // if none exists, make the key a hashed concat of all fields
-
-    // start a new fixture file 
-    // open the file with a {
-
-    // select all items from the table
-
-    // loop over result to write each entry as json
-
-        // if the primary key column name is set
-        // store the id of this particular entry
-
-        // if no such primary key exists, join the values
-        // and then hash the values to store that as the id
-
-      // unset null values
-
-      // build the entry as nice looking json
-
-      // write the entry with its id
-
-      // ensure that the last entry does not have a comma
-
-    // end the file with a }
-
-    // close file
-
-module.export = exp;
+module.exports = Exporter;
