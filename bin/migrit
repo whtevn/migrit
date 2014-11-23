@@ -3,6 +3,7 @@
 var up        = require('../lib/up')
   , down      = require('../lib/down') 
   , migration = require('../lib/migration').create
+  , fix_export= require('../lib/export_fixtures').generate
   , prompt    = require('prompt')
   , args      = require('yargs')
   , argv      = args.argv
@@ -124,6 +125,18 @@ config.then(function(c){
         .argv;
 
         down(c, argv.d, argv.m);
+      break;
+    case 'export':
+      argv = args
+        .usage("Usage: $0 import --fixture set_name --database connection_name")
+        .alias('f', 'fixture')
+        .alias('d', 'database')
+        .default('f', 'default')
+        .default('d', 'local')
+        .describe('f', 'name of fixture set')
+        .describe('d', 'database connection name')
+        .argv;
+      fix_export(c, argv.d, argv.f);
       break;
     default:
       console.log('show help');
