@@ -145,3 +145,21 @@ turn a series of JSON encoded fixtures into a database
 
     $ migrit import --from fixtureSet --to databaseName
 
+# Next Features
+
+- migrate database to appropriate place based on database state file on import
+  - assume testing database instead of local on fixture import
+
+- optionally make fixture imports additive (currently all are additive)
+
+- migrate up and down by n migrations, rather than exclusively by tag
+  - discover the migration key in bin/migrit if --num is set, set min/max accordingly and call normally
+
+- migration scripts for data management
+  - up and down scripts
+  - before and after for each
+
+- automated schema comparison to ensure "up" and "down" scripts cancel each other out
+
+- export existing schema as migrations
+

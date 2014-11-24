@@ -13,7 +13,7 @@ var fs  = require('q-io/fs')
 function up(config, database, max){
   var timestamp
 
-  migration.sql = sql.connect(config, database);
+  migration.sql = ((sql.connection&&sql) || sql.connect(config, database));
 
   migration.direction = 'up';
 
@@ -39,7 +39,7 @@ function up(config, database, max){
     .then(function(state){
       console.log("starting migrations");
       // get the migration files
-      return fs.listTree(config.base+(config.migrations||'migrations'))
+      return fs.listTree(config.base+(config.migrations))
         .then(function(path){
           // and execute them in order
           return migration.runSet(max, state, path)

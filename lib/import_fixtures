@@ -1,0 +1,90 @@
+#!/usr/bin/env node
+  var Importer = {}
+    , fs = require('q-io/fs')
+    , sql = require('./sql')
+    , _  = require('underscore')
+    ;
+
+Importer.print = function(config, database, name){
+  var filepath  = config.base+(config.fixtures)+'/'+name+'/'
+    , msg = "beginning "+name+" import into "+database+" database"
+    ;
+  console.log(msg.cyan);
+  Importer.config = config;
+  sql.connect(config, database);
+  return fs.listTree(filepath)
+    .then(function(path){
+      return Importer.execute(path);
+    })
+    .then(function(){
+      console.log("import complete".cyan);
+      sql.connection.end();
+    })
+    .catch(function(err){
+      console.log(err);
+    });
+}
+
+Importer.execute = function(tables){
+  if(!tables || tables.length == 0){ return true; }
+
+  var table = tables.shift();
+  return fs.isFile(table)
+    .then(function(is_file){
+      if(is_file && !table.match(/\/\.[^\/]*$/)){
+        return fs.read(table)
+            .then(function(contents){
+              var msg;
+              contents = _.values(JSON.parse(contents));
+              table = table.match(/\/([^\/]*).json$/)[1];
+              msg = "writing "+contents.length+" entries to "+table;
+
+              if(contents.length > 0 && table != Importer.config.state_table){
+                console.log(msg.yellow);
+                return Importer.write2Table(table, contents)
+              }
+
+
+            });
+      }
+    })
+    .then(function(){
+      return Importer.execute(tables);
+    })
+    .catch(function(err){
+      console.log(err.stack);
+    });
+}
+
+Importer.write2Table = function(table, contents){
+    if(!contents || contents.length == 0){
+      console.log("\t...done".green);
+      return true; 
+    }
+    var row = _.omit(contents.shift(), function(value, key, obj){
+          return (!value && !(value == 0 || value == ''));
+        })
+      , fields = _.keys(row).join(", ")
+      , values = _.values(row)
+      , query 
+      ;
+
+      values = values.filter(function(field){
+          return (field || field == 0 || field == '')
+        })
+        .map(function(field){
+          return "'"+field+"'"
+        }).join(", ");
+
+      if(table == Importer.config.state_table){
+        return true
+      }else{
+        query = "INSERT INTO "+table+"("+fields+")VALUES("+values+")"
+        return sql.query(query)
+           .then(function(){;
+              return Importer.write2Table(table, contents);
+            });
+      }
+}
+
+module.exports = Importer;

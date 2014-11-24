@@ -8,21 +8,22 @@ var mysql = require('mysql')
 sql = {
   connect: function(config, db){
     sql.config = config;
-    sql.config.state_table = (sql.config.state_table || 'database_state');
-    sql.config.state_field = (sql.config.state_field || 'timestamp');
 
-    sql.connection = mysql.createConnection(sql.config.connections[db])
+    sql.connection = (sql.connection || mysql.createConnection(sql.config.connections[db]));
     return sql;
   }
 
 , query: function(query){
-    return q.ninvoke(sql.connection, 'query', query);
+    return q.ninvoke(sql.connection, 'query', query)
+      .then(function(rows){
+        return rows[0];
+      });
   }
 
 , getDBState: function(){
     return sql.query("SELECT "+sql.config.state_field+" FROM "+sql.config.state_table)
       .then(function(rows){
-        return ((rows[0][0]&&+(rows[0][0][sql.config.state_field])) || 0);
+        return ((rows[0]&&+(rows[0][sql.config.state_field])) || 0);
       })
       .catch(function(err){
         if(err.code == 'ER_NO_SUCH_TABLE'){
