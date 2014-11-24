@@ -122,6 +122,11 @@ bring the database up to a particular migration using a particular connection
 
 without the `--database` option, migrit assumes you mean `local`
 
+optionally, you may migrate up a number of steps from the current location
+
+    $ migrit up -n 1
+
+
 ## bring down the database
 
 take the database all the way down
@@ -134,6 +139,10 @@ both flags optional
     $ migrit down --min [migration_timestamp] --database [database_name]
 
 without the `--database` option, migrit assumes you mean `local`
+
+optionally, you may migrate up a number of steps from the current location
+
+    $ migrit down -n 1
 
 ## fixtures
 
@@ -151,9 +160,6 @@ turn a series of JSON encoded fixtures into a database
   - assume testing database instead of local on fixture import
 
 - optionally make fixture imports additive (currently all are additive)
-
-- migrate up and down by n migrations, rather than exclusively by tag
-  - discover the migration key in bin/migrit if --num is set, set min/max accordingly and call normally
 
 - migration scripts for data management
   - up and down scripts

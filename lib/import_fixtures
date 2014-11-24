@@ -25,7 +25,7 @@ Importer.print = function(config, database, name){
     });
 }
 
-Importer.execute = function(tables){
+Importer.execute = function(tables, additive){
   if(!tables || tables.length == 0){ return true; }
 
   var table = tables.shift();
@@ -34,9 +34,15 @@ Importer.execute = function(tables){
       if(is_file && !table.match(/\/\.[^\/]*$/)){
         return fs.read(table)
             .then(function(contents){
+              table = table.match(/\/([^\/]*).json$/)[1];
+              if(!additive){
+                console.log("DELETE FROM "+table);
+                return sql.query("DELETE FROM "+table);
+              }
+            })
+            .then(function(contents){
               var msg;
               contents = _.values(JSON.parse(contents));
-              table = table.match(/\/([^\/]*).json$/)[1];
               msg = "writing "+contents.length+" entries to "+table;
 
               if(contents.length > 0 && table != Importer.config.state_table){

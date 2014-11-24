@@ -195,14 +195,16 @@ config.then(function(c){
     case 'import':
       argv = args
         .usage("Usage: $0 import --fixture set_name --database connection_name")
+        .alias('a', 'add')
         .alias('f', 'fixture')
         .alias('d', 'database')
+        .default('a', false)
         .default('f', 'default')
         .default('d', 'testing')
         .describe('f', 'name of fixture set')
         .describe('d', 'database connection name')
         .argv;
-      importer(c, argv.d, argv.f);
+      importer(c, argv.d, argv.f, argv.a);
       break;
     default:
       console.log('show help');
