@@ -154,12 +154,15 @@ turn a series of JSON encoded fixtures into a database
 
     $ migrit import --from fixtureSet --to databaseName
 
+by default, an import will delete all information in non-state-tables. To make 
+in import additive, simply add the -a or --add flag
+
+    $migrit import --add
+
 # Next Features
 
 - migrate database to appropriate place based on database state file on import
   - assume testing database instead of local on fixture import
-
-- optionally make fixture imports additive (currently all are additive)
 
 - migration scripts for data management
   - up and down scripts
