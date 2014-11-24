@@ -9,7 +9,7 @@ sql = {
   connect: function(config, db){
     sql.config = config;
 
-    sql.connection = mysql.createConnection(sql.config.connections[db])
+    sql.connection = (sql.connection || mysql.createConnection(sql.config.connections[db]));
     return sql;
   }
 

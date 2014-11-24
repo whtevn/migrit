@@ -2,9 +2,10 @@
 
 var up        = require('../lib/up')
   , down      = require('../lib/down') 
-  , migration = require('../lib/migration').create
+  , Migration = require('../lib/migration')
   , exporter  = require('../lib/export_fixtures').generate
   , importer  = require('../lib/import_fixtures').print
+  , sql       = require('../lib/sql')
   , prompt    = require('prompt')
   , args      = require('yargs')
   , argv      = args.argv
@@ -99,7 +100,7 @@ config.then(function(c){
         }
 
         prompt.get(schema, function(err, result){
-          migration(result.t, c);
+          Migration.create(result.t, c);
         });
       }catch(err){
         console.log(err);
@@ -110,26 +111,74 @@ config.then(function(c){
         .usage("Usage: $0 up --max 12345 --database connection_name")
         .alias('m', 'max')
         .alias('d', 'database')
+        .alias('n', 'num')
         .default('m', false)
         .default('d', 'local')
+        .describe('n', 'number of migrations to run down from current location')
         .describe('m', 'maximum migration to run')
         .describe('d', 'database connection name')
         .argv;
 
-        up(c, argv.d, argv.m);
+        if(argv.n){
+          sql.connect(c, argv.d)
+
+          q.all([
+            sql.getDBState()
+          , Migration.getSet(c)])
+          .then(function(promises){
+              var state = promises[0]
+                , migrations = promises[1]
+                , current = migrations.indexOf(state)
+                , advance = argv.n
+                , to_state = migrations[current+advance]
+                ;
+              return up(c, argv.d, to_state);
+            })
+            .catch(function(err){
+              console.log(err);
+              console.log(err.stack);
+            })
+        }else{
+          up(c, argv.d, argv.m);
+        }
       break;
     case 'down':
       argv = args
         .usage("Usage: $0 down --max 12345 --database connection_name")
         .alias('m', 'min')
         .alias('d', 'database')
+        .alias('n', 'num')
         .default('m', 0)
         .default('d', 'local')
+        .describe('n', 'number of migrations to run down from current location')
         .describe('m', 'minimum migration to run')
         .describe('d', 'database connection name')
         .argv;
 
-        down(c, argv.d, argv.m);
+        if(argv.n){
+          sql.connect(c, argv.d)
+
+          q.all([
+            sql.getDBState()
+          , Migration.getSet(c)])
+          .then(function(promises){
+              var state = promises[0]
+                , migrations = promises[1]
+                , current = migrations.indexOf(state)
+                , advance = argv.n
+                , to_state = migrations[current-advance]
+                ;
+              
+              return down(c, argv.d, to_state);
+            })
+            .catch(function(err){
+              console.log(err);
+              console.log(err.stack);
+            })
+        }else{
+          down(c, argv.d, argv.m);
+        }
+
       break;
     case 'export':
       argv = args
