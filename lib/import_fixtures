@@ -58,7 +58,7 @@ Importer.execute = function(tables){
 
 Importer.write2Table = function(table, contents){
     if(!contents || contents.length == 0){
-      console.log("\r\t...done".green);
+      console.log("\t...done".green);
       return true; 
     }
     var row = _.omit(contents.shift(), function(value, key, obj){
@@ -80,7 +80,6 @@ Importer.write2Table = function(table, contents){
         return true
       }else{
         query = "INSERT INTO "+table+"("+fields+")VALUES("+values+")"
-        console.log("\r\t"+query.grey);
         return sql.query(query)
            .then(function(){;
               return Importer.write2Table(table, contents);
