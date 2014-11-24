@@ -11,7 +11,8 @@ var up        = require('../lib/up')
   , argv      = args.argv
   , fs        = require('q-io/fs')
   , q         = require('q')
-  , config    = findConfig('.');
+  , config    = findConfig('.')
+  , additive
   ;
 
 prompt.message = '';
@@ -195,6 +196,7 @@ config.then(function(c){
     case 'import':
       argv = args
         .usage("Usage: $0 import --fixture set_name --database connection_name")
+        .alias('a', 'add')
         .alias('f', 'fixture')
         .alias('d', 'database')
         .default('f', 'default')
@@ -202,7 +204,8 @@ config.then(function(c){
         .describe('f', 'name of fixture set')
         .describe('d', 'database connection name')
         .argv;
-      importer(c, argv.d, argv.f);
+      additive = argv.a;
+      importer(c, argv.d, argv.f, additive);
       break;
     default:
       console.log('show help');
