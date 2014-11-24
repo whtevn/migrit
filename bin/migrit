@@ -198,7 +198,7 @@ config.then(function(c){
         .alias('f', 'fixture')
         .alias('d', 'database')
         .default('f', 'default')
-        .default('d', 'local')
+        .default('d', 'testing')
         .describe('f', 'name of fixture set')
         .describe('d', 'database connection name')
         .argv;
