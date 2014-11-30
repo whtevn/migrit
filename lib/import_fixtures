@@ -3,9 +3,10 @@
     , fs = require('q-io/fs')
     , sql = require('./sql')
     , _  = require('underscore')
+    , q  = require('q')
     ;
 
-Importer.print = function(config, database, name){
+Importer.print = function(config, database, name, additive){
   var filepath  = config.base+(config.fixtures)+'/'+name+'/'
     , msg = "beginning "+name+" import into "+database+" database"
     ;
@@ -14,7 +15,7 @@ Importer.print = function(config, database, name){
   sql.connect(config, database);
   return fs.listTree(filepath)
     .then(function(path){
-      return Importer.execute(path);
+      return Importer.execute(path, additive);
     })
     .then(function(){
       console.log("import complete".cyan);
@@ -25,7 +26,7 @@ Importer.print = function(config, database, name){
     });
 }
 
-Importer.execute = function(tables){
+Importer.execute = function(tables, additive){
   if(!tables || tables.length == 0){ return true; }
 
   var table = tables.shift();
@@ -34,26 +35,48 @@ Importer.execute = function(tables){
       if(is_file && !table.match(/\/\.[^\/]*$/)){
         return fs.read(table)
             .then(function(contents){
+              table = table.match(/\/([^\/]*).json$/)[1];
+              return contents;
+            })
+            .then(function(contents){
               var msg;
               contents = _.values(JSON.parse(contents));
-              table = table.match(/\/([^\/]*).json$/)[1];
-              msg = "writing "+contents.length+" entries to "+table;
 
               if(contents.length > 0 && table != Importer.config.state_table){
-                console.log(msg.yellow);
-                return Importer.write2Table(table, contents)
+                return Importer.delete(table, additive)
+                               .then(function(){
+                                  msg = "writing "+contents.length+" entries to "+table;
+                                  console.log(msg.yellow);
+                                  return Importer.write2Table(table, contents)
+                                })
               }
-
-
+            })
+            .catch(function(err){
+              console.log(err.stack);
             });
       }
     })
     .then(function(){
-      return Importer.execute(tables);
+      return Importer.execute(tables, additive);
     })
     .catch(function(err){
       console.log(err.stack);
     });
+}
+
+Importer.delete = function(table, additive){
+  var deferred = q.defer();
+  if(!additive){
+    msg = "removing current contents from "+table;
+    console.log(msg.red);
+    return sql.query('DELETE FROM '+table)
+              .then(function(){
+                deferred.resolve();
+              });
+  }else{
+    deferred.resolve();
+  }
+  return deferred.promise;
 }
 
 Importer.write2Table = function(table, contents){

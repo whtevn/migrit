@@ -2,7 +2,7 @@
   "name": "migrit",
   "author": "Evan Short",
   "description": "command line tool for managing database migrations",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "bin": {
     "migrit": "./bin/migrit"
   },
@@ -33,7 +33,6 @@
   "scripts": {},
   "dependencies": {
     "mysql": "~2.5.3",
-    "promiseus": "whtevn/promiseus",
     "prompt": "~0.2.14",
     "q": "^1.1.1",
     "q-io": "^1.11.6",
