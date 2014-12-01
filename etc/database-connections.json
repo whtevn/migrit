@@ -1,0 +1,39 @@
+{
+  "connections": {
+    "local": {
+      "database": ""
+    , "host":     "127.0.0.1"
+    , "port":     "3306"
+    , "user":     "root"
+    , "pass":     ""
+    }
+  , "testing": {
+      "database": ""
+    , "host":     ""
+    , "port":     ""
+    , "user":     ""
+    , "pass":     ""
+    }
+  , "staging": {
+      "database": ""
+    , "host":     ""
+    , "port":     ""
+    , "user":     ""
+    , "pass":     ""
+    }
+  , "beta": {
+      "database": ""
+    , "host":     ""
+    , "port":     ""
+    , "user":     ""
+    , "pass":     ""
+    }
+  , "production": {
+      "database": ""
+    , "host":     ""
+    , "port":     ""
+    , "user":     ""
+    , "pass":     ""
+    }
+  }
+}

@@ -78,6 +78,7 @@ function findConfig(level){
 config.then(function(c){
   var title
     , schema
+    , filename
     ;
 
   switch(argv._[0]){
@@ -207,6 +208,25 @@ config.then(function(c){
       additive = argv.a;
       importer(c, argv.d, argv.f, additive);
       break;
+    case 'init':
+      // create database-connections.json file in curent working directory
+      // if etc/ dir exists in cwd, create file in there
+      filename = process.cwd();
+      console.log(filename);
+      return fs.isDirectory(filename+'/etc')
+        .then(function(is_directory){
+          if(is_directory){
+            filename = filename+'/etc';
+          }
+          filename = filename+'/database-connections.json';
+          console.log("creating "+filename);
+          return fs.copy('./etc/database-connections.json', filename);
+        })
+        .catch(function(err){
+          console.log(err);
+        })
+        ;
+      break
     default:
       console.log('show help');
       break; 
