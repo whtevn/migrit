@@ -3,7 +3,7 @@ var fs  = require('q-io/fs')
   , sql = require('./sql')
   , q   = require('q')
   , _   = require('underscore')
-  , sha1= require('sha1')
+  , uuid= require('node-uuid')
   , Exporter
   ;
 
@@ -111,7 +111,7 @@ Exporter = {
       if(key_field){
         id = item[key_field];
       }else{
-        id = sha1(_.values(item).join(""));
+        id = uuid.v4();
       }
       fixture_set[id] = item
     });
