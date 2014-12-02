@@ -209,6 +209,7 @@ config.then(function(c){
       importer(c, argv.d, argv.f, additive);
       break;
     case 'init':
+    console.log("very first, no?");
       // create database-connections.json file in curent working directory
       // if etc/ dir exists in cwd, create file in there
       filename = process.cwd();
