@@ -1,3 +1,8 @@
+Installation
+------------
+    
+    $ sudo npm install migrit -g
+
 Purpose
 -------
 Iterative Schema Migrations - currently only works with MySQL, but future plans
