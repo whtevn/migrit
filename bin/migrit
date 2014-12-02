@@ -1,17 +1,18 @@
 #!/usr/bin/env node
 
-var up        = require('../lib/up')
-  , down      = require('../lib/down') 
-  , Migration = require('../lib/migration')
-  , exporter  = require('../lib/export_fixtures').generate
-  , importer  = require('../lib/import_fixtures').print
-  , sql       = require('../lib/sql')
+var migrit    = require('../migrit')
+  , up        = migrit.up
+  , down      = migrit.down
+  , Migration = migrit.migration
+  , exporter  = migrit.exporter
+  , importer  = migrit.importer
+  , sql       = migrit.sql
+  , config    = migrit.config
   , prompt    = require('prompt')
   , args      = require('yargs')
   , argv      = args.argv
   , fs        = require('q-io/fs')
   , q         = require('q')
-  , config    = findConfig('.')
   , additive
   ;
 
@@ -19,63 +20,13 @@ prompt.message = '';
 prompt.delimiter = '';
 
 
-// recursively search for a config file
-// could abstract this out into its own package
-// will be useful for deploy tool
-function findConfig(level){
-  // check to see if the level we are at is a directory
-  return fs.isDirectory(level)
-    .then(function(is_directory){
-      var dir_options = ['/.migrit.json', '/migrit.json', '/etc/migrit.json', '/etc/.migrit.json'];
-      if(is_directory){
-        // make an array of promises to return whether or not each option is a file on this level
-        is_file = dir_options.map(function(opt){
-          // check to see if any of the options for a migrit.json file exist on this level
-          return fs.isFile(level+opt);
-        });
-
-        return q.all(is_file)
-          .then(function(is_file){
-            // if any of this options are found on this level, return the location of the file
-            // locate the working dir_option by finding the first place the is_file array is `true`
-            // it is possible to find more than one migrit.json file is found, but they will be loaded
-            // by preference according to the order of the array
-            return level+dir_options[is_file.indexOf(true)];
-          });
-      }else{
-        // otherwise, throw an error
-        throw('no config file found'); 
-      }
-    })
-    .then(function(is_file){
-      if(is_file){
-        // if the file was found
-        return fs.read(is_file)
-          .then(function(contents){
-            contents = JSON.parse(contents); 
-            contents.base = is_file.replace(/\.?migrit.json/, '');
-            contents.state_table = contents.state_table||'database_state';
-            contents.state_field = contents.state_field||'timestamp';
-            contents.migrations  = contents.migrations||'migrations'
-            contents.fixtures    = contents.fixtures||'fixtures'
-            return contents;
-          });
-      }else{
-        // if no file was found, try one level higher
-        return findConfig(level+'/..');
-      }
-    })
-    .fail(function(err){
-      // console log any errors
-      console.log(err);
-    });
-}
 
 // the first command line option tells which sub-program is being run
 
 // accept other command line arguments and delegate to sub-programs as necessary
 
 config.then(function(c){
+  console.log(c);
   var title
     , schema
     ;
