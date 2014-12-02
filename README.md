@@ -153,11 +153,15 @@ optionally, you may migrate up a number of steps from the current location
 
 make a database into a series of JSON encoded fixtures 
 
-    $ migrit export --from databaseName --to fixtureSet
+    $ migrit export --database databaseName --fixture fixtureSet
 
 turn a series of JSON encoded fixtures into a database
 
-    $ migrit import --from fixtureSet --to databaseName
+    $ migrit import --fixture fixtureSet --database databaseName
+
+to save yourself potential problems because of confusion, **I very strongly 
+advise against naming fixture sets the same as databases**. I cannot emphasize
+this enough. 
 
 by default, an import will delete all information in non-state-tables. To make 
 in import additive, simply add the -a or --add flag
