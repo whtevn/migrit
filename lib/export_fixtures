@@ -2,10 +2,34 @@
 var fs  = require('q-io/fs')
   , sql = require('./sql')
   , q   = require('q')
-  , objVals = require('underscore').values
+  , _   = require('underscore')
   , sha1= require('sha1')
   , Exporter
   ;
+
+function fixData(fixture_data, field_data){
+  field_data = _.omit(field_data, function(field){
+    return !field.Type.match('date')
+  })
+  field_data = _.values(field_data).map(function(field){
+    return field.Field
+  });
+
+  fixture_data.forEach(function(fixture){
+    field_data.forEach(function(field){
+      var date = new Date(fixture[field])
+        , result;
+      result = date.getFullYear()+"-"+(date.getMonth()+1)+"-"+date.getDate()+" ";
+      result = result+date.getHours()+":"+date.getMinutes()+":"+date.getSeconds();
+      fixture[field] = result;
+    })
+  });
+
+  return fixture_data;
+}
+
+function fieldType(name, field_data){
+}
 
 Exporter = {
   generate: function (config, database, fixtures){
@@ -51,11 +75,15 @@ Exporter = {
         "SHOW INDEX FROM "+table
       )
     , sql.query(
+        "SHOW FIELDS FROM "+table
+      )
+    , sql.query(
         "SELECT * FROM "+table
       )
     ]).then(function(rows){
       var db_info = rows[0]
-        , fixture_data = rows[1]
+        , field_data = rows[1]
+        , fixture_data = rows[2]
         , key_field
         , msg = "exporting "+fixture_data.length+" entries from "+table+" table"
         ;
@@ -63,6 +91,7 @@ Exporter = {
         key_field = db_info[0].Column_name;
       }
       console.log(msg.yellow);
+      fixture_data = fixData(fixture_data, field_data);
       return Exporter.write(table, key_field, fixture_data);
     })
     .then(function(){
@@ -82,7 +111,7 @@ Exporter = {
       if(key_field){
         id = item[key_field];
       }else{
-        id = sha1(objVals(item).join(""));
+        id = sha1(_.values(item).join(""));
       }
       fixture_set[id] = item
     });
