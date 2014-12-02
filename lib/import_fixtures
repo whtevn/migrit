@@ -7,7 +7,7 @@
     ;
 
 Importer.print = function(config, database, name, additive){
-  var filepath  = config.base+(config.fixtures)+'/'+name+'/'
+  var filepath  = config.__basedir+(config.fixtures)+'/'+name+'/'
     , msg = "beginning "+name+" import into "+database+" database"
     ;
   console.log(msg.cyan);

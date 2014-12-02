@@ -26,7 +26,6 @@ prompt.delimiter = '';
 // accept other command line arguments and delegate to sub-programs as necessary
 
 config.then(function(c){
-  console.log(c);
   var title
     , schema
     ;

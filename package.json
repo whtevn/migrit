@@ -2,7 +2,7 @@
   "name": "migrit",
   "author": "Evan Short",
   "description": "command line tool for managing database migrations",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "bin": {
     "migrit": "./bin/migrit"
   },
@@ -30,6 +30,7 @@
     "schema"
   ],
   "scripts": {},
+  "main": "./migrit",
   "dependencies": {
     "confoo": "git://github.com/whtevn/confoo",
     "mysql": "~2.5.3",

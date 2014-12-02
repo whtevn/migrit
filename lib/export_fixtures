@@ -36,7 +36,7 @@ Exporter = {
     Exporter.config = config;
     Exporter.database = database;
     Exporter.fixtures = fixtures;
-    Exporter.filepath = config.base+(config.fixtures||'fixtures')+'/'+fixtures+"/";
+    Exporter.filepath = config.__basedir+(config.fixtures||'fixtures')+'/'+fixtures+"/";
     var snapshots = []
       , msg = "beginning export of "+database+" database into the "+fixtures+" fixture set"
       ;
