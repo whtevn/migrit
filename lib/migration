@@ -85,6 +85,7 @@ Migration.getSet = function(config){
 Migration.run = function(file, timestamp, skip, display){
   return fs.read(file)
     .then(function(migration){
+      migration = migration.replace(/(\r\n|\n|\r)/gm,"");
       migration = JSON.parse(migration);
       console.log((skip||'running'.magenta), (display&&display.toString().grey), migration.description.green);
 
