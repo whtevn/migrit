@@ -39,13 +39,13 @@ function up(config, database, max){
     .then(function(state){
       console.log("starting migrations");
       // get the migration files
-      return fs.listTree(config.base+(config.migrations))
+      return fs.listTree(config.__basedir+config.migrations)
         .then(function(path){
           // and execute them in order
           return migration.runSet(max, state, path)
             .then(function(){
               sql.connection.end();
-            });
+            })
         });
       
     })

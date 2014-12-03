@@ -15,7 +15,7 @@ Migration.getTimestampFromFilename = function(file){
 Migration.create = function(title, config){
   var timestamp = +(new Date)
     , filename  = timestamp+"_"+title.replace(/\s/g, "_")+".json"
-    , filepath  = config.base+(config.migrations)+'/'
+    , filepath  = config.__basedir+(config.migrations)+'/'
     , migration = {
         author:      ""
       , description: title
@@ -72,7 +72,7 @@ Migration.runSet = function (max, state, migrations){
 }
 
 Migration.getSet = function(config){
-  return fs.listTree(config.base+(config.migrations))
+  return fs.listTree(config.__basedir+(config.migrations))
     .then(function(files){
       return files.map(Migration.getTimestampFromFilename)
                   .filter(function(file){
@@ -85,6 +85,7 @@ Migration.getSet = function(config){
 Migration.run = function(file, timestamp, skip, display){
   return fs.read(file)
     .then(function(migration){
+      migration = migration.replace(/(\r\n|\n|\r)/gm,"");
       migration = JSON.parse(migration);
       console.log((skip||'running'.magenta), (display&&display.toString().grey), migration.description.green);
 

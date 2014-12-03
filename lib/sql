@@ -53,7 +53,7 @@ sql = {
         return sql.query("UPDATE "+table_name+" SET "+field_name+"= '"+state+"'");
       })
       .then(function(){
-        return sql.batch(statements);
+        return sql.batch(state, statements);
       })
       .catch(function(err){
         console.log("\t\tlib/sql".red, "line 58:".red, err.message);

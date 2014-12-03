@@ -44,7 +44,7 @@ function up(config, database, min){
     .then(function(state){
       console.log("starting migrations");
       // get the migration files
-      return fs.listTree(config.base+(config.migrations||'migrations'))
+      return fs.listTree(config.__basedir+(config.migrations||'migrations'))
         .then(function(path){
           // and execute them in order
           return migration.runSet(min, state, path.reverse())
