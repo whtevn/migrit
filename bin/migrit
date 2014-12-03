@@ -28,6 +28,7 @@ prompt.delimiter = '';
 config.then(function(c){
   var title
     , schema
+    , filename
     ;
 
   switch(argv._[0]){
@@ -157,6 +158,31 @@ config.then(function(c){
       additive = argv.a;
       importer(c, argv.d, argv.f, additive);
       break;
+    case 'init':
+      console.log("adding database-connections file to project");
+      // create database-connections.json file in curent working directory
+      // if etc/ dir exists in cwd, create file in there
+      filename = process.cwd();
+      return fs.isDirectory(filename+'/etc')
+        .then(function(is_directory){
+          if(is_directory){
+            console.log("\twriting into /etc");
+            filename = filename+'/etc';
+          }
+          filename = filename+'/database-connections.json';
+          fs.read(__dirname+'/../etc/database-connections.json')
+            .then(function(data){
+              fs.write(filename, data)
+                .then(function(){
+                  console.log("\ndatabase connections file created at "+filename);
+                });
+            });
+        })
+        .catch(function(err){
+          console.log(err);
+        })
+        ;
+      break
     default:
       console.log('show help');
       break; 
