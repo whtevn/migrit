@@ -96,7 +96,7 @@ Importer.write2Table = function(table, contents){
           return (field || field == 0 || field == '')
         })
         .map(function(field){
-          return "'"+field+"'"
+          return sql.connection.escape(field)
         }).join(", ");
 
       if(table == Importer.config.state_table){
