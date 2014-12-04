@@ -9,7 +9,7 @@ var fs  = require('q-io/fs')
 
 function fixData(fixture_data, field_data){
   field_data = _.omit(field_data, function(field){
-    return !field.Type.match('date')
+    return !field.Type.match('date') && !field.Type.match('timestamp')
   })
   field_data = _.values(field_data).map(function(field){
     return field.Field
@@ -17,10 +17,14 @@ function fixData(fixture_data, field_data){
 
   fixture_data.forEach(function(fixture){
     field_data.forEach(function(field){
-      var date = new Date(fixture[field])
-        , result;
-      result = date.getFullYear()+"-"+(date.getMonth()+1)+"-"+date.getDate()+" ";
-      result = result+date.getHours()+":"+date.getMinutes()+":"+date.getSeconds();
+      var date   = new Date(fixture[field])
+        , result = fixture[field];
+
+      if(fixture[field] && fixture[field] != "0000-00-00 00:00:00"){
+        result = date.getFullYear()+"-"+(date.getMonth()+1)+"-"+date.getDate()+" ";
+        result = result+date.getHours()+":"+date.getMinutes()+":"+date.getSeconds();
+      }
+
       fixture[field] = result;
     })
   });
@@ -88,7 +92,11 @@ Exporter = {
         , msg = "exporting "+fixture_data.length+" entries from "+table+" table"
         ;
       if(db_info.length > 0){
-        key_field = db_info[0].Column_name;
+        db_info.forEach(function(info){
+          if(info.Key_name == 'PRIMARY'){
+            key_field = info.Column_name;
+          }
+        })
       }
       console.log(msg.yellow);
       fixture_data = fixData(fixture_data, field_data);
