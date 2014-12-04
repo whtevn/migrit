@@ -55,7 +55,7 @@ config.then(function(c){
           Migration.create(result.t, c);
         });
       }catch(err){
-        console.log(err);
+        console.log(err.message);
       }
       break;
     case 'up':
@@ -179,7 +179,7 @@ config.then(function(c){
             });
         })
         .catch(function(err){
-          console.log(err);
+          console.log(err.message);
         })
         ;
       break
