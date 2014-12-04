@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+    <meta charset='utf-8'>
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <meta name="description" content="Migrit : migrate iteratively - environment agnostic schema migration manager">
+
+    <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">
+
+    <title>Migrit</title>
+  </head>
+
+  <body>
+
+    <!-- HEADER -->
+    <div id="header_wrap" class="outer">
+        <header class="inner">
+          <a id="forkme_banner" href="https://github.com/whtevn/migrit">View on GitHub</a>
+
+          <h1 id="project_title">Migrit</h1>
+          <h2 id="project_tagline">migrate iteratively - environment agnostic schema migration manager</h2>
+
+            <section id="downloads">
+              <a class="zip_download_link" href="https://github.com/whtevn/migrit/zipball/master">Download this project as a .zip file</a>
+              <a class="tar_download_link" href="https://github.com/whtevn/migrit/tarball/master">Download this project as a tar.gz file</a>
+            </section>
+        </header>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div id="main_content_wrap" class="outer">
+      <section id="main_content" class="inner">
+        <h2>
+<a id="installation" class="anchor" href="#installation" aria-hidden="true"><span class="octicon octicon-link"></span></a>Installation</h2>
+
+<pre><code>$ sudo npm install migrit -g
+</code></pre>
+
+<h2>
+<a id="purpose" class="anchor" href="#purpose" aria-hidden="true"><span class="octicon octicon-link"></span></a>Purpose</h2>
+
+<p>Iterative Schema Migrations - currently only works with MySQL, but future plans
+include expanding to other databases</p>
+
+<h2>
+<a id="use" class="anchor" href="#use" aria-hidden="true"><span class="octicon octicon-link"></span></a>Use</h2>
+
+<h2>
+<a id="config-file" class="anchor" href="#config-file" aria-hidden="true"><span class="octicon octicon-link"></span></a>config file</h2>
+
+<p>migrit expects to find a <code>migrit.json</code> or <code>.migrit.json</code> file to give it
+information about where and how to connect to a database, how to find the
+state of the schema</p>
+
+<p>it will look in all directories above your current directory, and all
+directories named <code>etc/</code> inside those directories. If none is found, it will
+error out</p>
+
+<p>minimum migrit.json file:</p>
+
+<pre><code>{
+  "connections": {
+    "local": {
+      "host": "127.0.0.1"
+    , "database": "migration_demo"
+    , "port": "3306"
+    , "user": "root"
+    , "pass": ""
+    }
+  }
+}
+</code></pre>
+
+<p>optional args:</p>
+
+<pre><code>{
+  "state_table": "database_state"  // name of table migrit watches for state
+, "state_field": "timestamp"       // field with database state in state_table
+, "migrations" : "./migrations"    // path to migrations dir, relative to config
+, "fixtures"   : "./fixtures"      // path to fixtures dir, relative to config
+, "connections": {
+    "local": {
+      "host": "127.0.0.1"
+    , "database": "migration_demo"
+    , "port": "3306"
+    , "user": "root"
+    , "pass": ""
+    }
+  , "staging": {
+      "host": "my.fancy.sqlserver.com"
+    , "database": "migration_staging"
+    , "port": "6606"
+    , "user": "mySqlAdmin"
+    , "pass": "super5ecret"
+    }
+  , "etc": {
+      "host": "my.fancy.sqlserver.com"
+    , "database": "migration_etc"
+    , "port": "6606"
+    , "user": "mySqlAdmin"
+    , "pass": "super5ecret"
+    }
+  }
+}
+</code></pre>
+
+<p>connections are arbitrary. If no <code>--database</code> tag is specified,
+<code>--database local</code> will be assumed</p>
+
+<h2>
+<a id="create-migrations" class="anchor" href="#create-migrations" aria-hidden="true"><span class="octicon octicon-link"></span></a>create migrations</h2>
+
+<p>create a new migration</p>
+
+<pre><code>$ migrit
+</code></pre>
+
+<p>which will prompt you for your migration's puprose</p>
+
+<pre><code>$ migrit -t 'set up users table'
+</code></pre>
+
+<p>this will create a new migration file named something like
+<code>1416595944375_set_up_users_table</code>, and inside that file will be some json
+within which you will add your sql to define the migration</p>
+
+<p>for example:</p>
+
+<pre><code>{
+  "author": "Evan Short",
+  "description": "set up users table",
+  "created_at": 1416595944375,
+  "up": [
+    "CREATE TABLE users(user_id VARCHAR(255), created_at DATETIME)"
+  ],
+  "down": [
+    "DROP TABLE users"
+  ]
+}
+</code></pre>
+
+<p>or, because the sql blocks are defined in arrays, you may issue multiple sql
+commands</p>
+
+<pre><code>{
+  "author": "Evan Short",
+  "description": "set up users table",
+  "created_at": 1416595944375,
+  "up": [
+    "CREATE TABLE users(user_id VARCHAR(255), created_at DATETIME)"
+  , "alter table users add name varchar(255)"
+  ],
+  "down": [
+    "alter table users drop column name"
+  , "DROP TABLE users"
+  ]
+}
+</code></pre>
+
+<h2>
+<a id="bring-up-the-database" class="anchor" href="#bring-up-the-database" aria-hidden="true"><span class="octicon octicon-link"></span></a>bring up the database</h2>
+
+<p>once you have created a migration, you will want to apply it to your database</p>
+
+<pre><code>$ migrit up 
+</code></pre>
+
+<p>bring the database up to a particular migration using a particular connection</p>
+
+<pre><code>$ migrit up --max [migration_timestamp] --database [database_name]
+</code></pre>
+
+<p>without the <code>--database</code> option, migrit assumes you mean <code>local</code></p>
+
+<p>optionally, you may migrate up a number of steps from the current location</p>
+
+<pre><code>$ migrit up -n 1
+</code></pre>
+
+<h2>
+<a id="bring-down-the-database" class="anchor" href="#bring-down-the-database" aria-hidden="true"><span class="octicon octicon-link"></span></a>bring down the database</h2>
+
+<p>take the database all the way down</p>
+
+<pre><code>$ migrit down
+</code></pre>
+
+<p>take the database down to a particular migration using a particular connection.
+both flags optional</p>
+
+<pre><code>$ migrit down --min [migration_timestamp] --database [database_name]
+</code></pre>
+
+<p>without the <code>--database</code> option, migrit assumes you mean <code>local</code></p>
+
+<p>optionally, you may migrate up a number of steps from the current location</p>
+
+<pre><code>$ migrit down -n 1
+</code></pre>
+
+<h2>
+<a id="fixtures" class="anchor" href="#fixtures" aria-hidden="true"><span class="octicon octicon-link"></span></a>fixtures</h2>
+
+<p>make a database into a series of JSON encoded fixtures </p>
+
+<pre><code>$ migrit export --database databaseName --fixture fixtureSet
+</code></pre>
+
+<p>turn a series of JSON encoded fixtures into a database</p>
+
+<pre><code>$ migrit import --fixture fixtureSet --database databaseName
+</code></pre>
+
+<p>to save yourself potential problems because of confusion, <strong>I very strongly 
+advise against naming fixture sets the same as databases</strong>. I cannot emphasize
+this enough. </p>
+
+<p>by default, an import will delete all information in non-state-tables. To make 
+in import additive, simply add the -a or --add flag</p>
+
+<pre><code>$migrit import --add
+</code></pre>
+
+<h1>
+<a id="next-features" class="anchor" href="#next-features" aria-hidden="true"><span class="octicon octicon-link"></span></a>Next Features</h1>
+
+<ul>
+<li>
+<p>migrate database to appropriate place based on database state file on import</p>
+
+<ul>
+<li>assume testing database instead of local on fixture import</li>
+</ul>
+</li>
+<li>
+<p>migration scripts for data management</p>
+
+<ul>
+<li>up and down scripts</li>
+<li>before and after for each</li>
+</ul>
+</li>
+<li><p>automated schema comparison to ensure "up" and "down" scripts cancel each other out</p></li>
+<li><p>export existing schema as migrations</p></li>
+</ul>
+      </section>
+    </div>
+
+    <!-- FOOTER  -->
+    <div id="footer_wrap" class="outer">
+      <footer class="inner">
+        <p class="copyright">Migrit maintained by <a href="https://github.com/whtevn">whtevn</a></p>
+        <p>Published with <a href="http://pages.github.com">GitHub Pages</a></p>
+      </footer>
+    </div>
+
+    
+
+  </body>
+</html>
