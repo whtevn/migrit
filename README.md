@@ -13,7 +13,7 @@ Use
 
 ## config file
     
-migrit expects to find a `migrit.json` or `.migrit.json` file to give it
+migrit expects to find a `database-connections.json` or `.database-connections.json` file to give it
 information about where and how to connect to a database, how to find the
 state of the schema
 
@@ -21,7 +21,7 @@ it will look in all directories above your current directory, and all
 directories named `etc/` inside those directories. If none is found, it will
 error out
 
-minimum migrit.json file:
+minimum database-connections.json file:
 
     {
       "connections": {
