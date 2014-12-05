@@ -49,7 +49,7 @@ include expanding to other databases</p>
 <h2>
 <a id="config-file" class="anchor" href="#config-file" aria-hidden="true"><span class="octicon octicon-link"></span></a>config file</h2>
 
-<p>migrit expects to find a <code>migrit.json</code> or <code>.migrit.json</code> file to give it
+<p>migrit expects to find a <code>database-connections.json</code> or <code>.database-connections.json</code> file to give it
 information about where and how to connect to a database, how to find the
 state of the schema</p>
 
@@ -57,7 +57,7 @@ state of the schema</p>
 directories named <code>etc/</code> inside those directories. If none is found, it will
 error out</p>
 
-<p>minimum migrit.json file:</p>
+<p>minimum database-connections.json file:</p>
 
 <pre><code>{
   "connections": {
