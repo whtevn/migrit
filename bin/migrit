@@ -74,7 +74,7 @@ config.then(function(c){
         .describe('t', 'title for the migration')
         .argv;
       try{
-        prompt.override = args.argv;
+        prompt.override = argv;
         prompt.start();
 
         schema = {
@@ -87,7 +87,7 @@ config.then(function(c){
         }
 
         prompt.get(schema, function(err, result){
-          Migration.create(result.t, c);
+          Migration.create((result.t), c);
         });
       }catch(err){
         console.log(err.message);
