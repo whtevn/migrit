@@ -202,4 +202,6 @@ config.then(function(c){
 })
 .catch(function(err){
   console.log(err.message);
+
+  console.log("\nHave you run `migrit init` for this project?");
 });
