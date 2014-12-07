@@ -20,6 +20,41 @@ prompt.message = '';
 prompt.delimiter = '';
 
 
+    if(argv._[0] == 'init'){
+      console.log("adding database-connections file to project");
+      // create database-connections.json file in curent working directory
+      // if etc/ dir exists in cwd, create file in there
+      filename = process.cwd();
+      return fs.isDirectory(filename+'/etc')
+        .then(function(is_directory){
+          if(is_directory){
+            console.log("\t...looking in /etc");
+            filename = filename+'/etc';
+          }
+
+          filename = filename+'/database-connections.json';
+          fs.isFile(filename)
+            .then(function(is_file){
+              if(is_file){
+                console.log("\n"+filename+" already exists");
+              }else{
+                fs.read(__dirname+'/../etc/database-connections.json')
+                  .then(function(data){
+                      fs.write(filename, data)
+                        .then(function(){
+                          console.log("\ndatabase connections file created at "+filename);
+                        });
+                  });
+              }
+            })
+
+        })
+        .catch(function(err){
+          console.log(err.message);
+        })
+        ;
+        exit;
+      }
 
 // the first command line option tells which sub-program is being run
 
@@ -159,29 +194,6 @@ config.then(function(c){
       importer(c, argv.d, argv.f, additive);
       break;
     case 'init':
-      console.log("adding database-connections file to project");
-      // create database-connections.json file in curent working directory
-      // if etc/ dir exists in cwd, create file in there
-      filename = process.cwd();
-      return fs.isDirectory(filename+'/etc')
-        .then(function(is_directory){
-          if(is_directory){
-            console.log("\twriting into /etc");
-            filename = filename+'/etc';
-          }
-          filename = filename+'/database-connections.json';
-          fs.read(__dirname+'/../etc/database-connections.json')
-            .then(function(data){
-              fs.write(filename, data)
-                .then(function(){
-                  console.log("\ndatabase connections file created at "+filename);
-                });
-            });
-        })
-        .catch(function(err){
-          console.log(err.message);
-        })
-        ;
       break
     default:
       console.log('show help');

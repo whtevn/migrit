@@ -2,14 +2,14 @@
   "connections": {
     "local": {
       "host": "127.0.0.1"
-    , "database": "migration_demo"
+    , "database": "projectName_dev"
     , "port": "3306"
     , "user": "root"
     , "pass": ""
     }
   , "testing": {
       "host": "127.0.0.1"
-    , "database": "migration_demo"
+    , "database": "projectName_test"
     , "port": "3306"
     , "user": "root"
     , "pass": ""
