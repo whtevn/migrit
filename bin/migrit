@@ -191,7 +191,10 @@ config.then(function(c){
         .describe('d', 'database connection name')
         .argv;
       additive = argv.a;
-      importer(c, argv.d, argv.f, additive);
+      importer(c, argv.d, argv.f, additive)
+        .then(function(connection){
+          connection.end();
+        });
       break;
     case 'init':
       break

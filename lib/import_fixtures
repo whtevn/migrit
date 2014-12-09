@@ -19,7 +19,7 @@ Importer.print = function(config, database, name, additive){
     })
     .then(function(){
       console.log("import complete".cyan);
-      sql.connection.end();
+      return(sql.connection);
     })
     .catch(function(err){
       console.log(err);
