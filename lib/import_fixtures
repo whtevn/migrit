@@ -6,7 +6,8 @@
     , q  = require('q')
     ;
 
-Importer.print = function(config, database, name, additive){
+Importer.print = function(config, database, name, additive, quiet){
+  Importer._quiet = quiet;
   var filepath  = config.__basedir+(config.fixtures)+'/'+name+'/'
     , msg = "beginning "+name+" import into "+database+" database"
     ;
@@ -46,7 +47,7 @@ Importer.execute = function(tables, additive){
                 return Importer.delete(table, additive)
                                .then(function(){
                                   msg = "writing "+contents.length+" entries to "+table;
-                                  console.log(msg.yellow);
+                                  !Importer._quiet && console.log(msg.yellow);
                                   return Importer.write2Table(table, contents)
                                 })
               }
@@ -68,7 +69,7 @@ Importer.delete = function(table, additive){
   var deferred = q.defer();
   if(!additive){
     msg = "removing current contents from "+table;
-    console.log(msg.red);
+    !Importer._quiet && console.log(msg.red);
     return sql.query('DELETE FROM '+table)
               .then(function(){
                 deferred.resolve();
@@ -81,7 +82,7 @@ Importer.delete = function(table, additive){
 
 Importer.write2Table = function(table, contents){
     if(!contents || contents.length == 0){
-      console.log("\t...done".green);
+      !Importer._quiet && console.log("\t...done".green);
       return true; 
     }
     var row = _.omit(contents.shift(), function(value, key, obj){
