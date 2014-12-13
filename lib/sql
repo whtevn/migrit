@@ -20,6 +20,11 @@ sql = {
       });
   }
 
+, kill: function(query){
+    sql.connection.end();
+    delete sql.connection
+  }
+
 , getDBState: function(){
     return sql.query("SELECT "+sql.config.state_field+" FROM "+sql.config.state_table)
       .then(function(rows){
