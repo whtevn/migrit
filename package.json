@@ -2,7 +2,7 @@
   "name": "migrit",
   "author": "Evan Short",
   "description": "command line tool for managing database migrations",
-  "version": "0.0.15",
+  "version": "0.0.16",
   "bin": {
     "migrit": "./bin/migrit"
   },
