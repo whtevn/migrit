@@ -43,7 +43,7 @@ Importer.execute = function(tables, additive){
               var msg;
               contents = _.values(JSON.parse(contents));
 
-              if(contents.length > 0 && table != Importer.config.state_table){
+              if(table != Importer.config.state_table){
                 return Importer.delete(table, additive)
                                .then(function(){
                                   msg = "writing "+contents.length+" entries to "+table;
