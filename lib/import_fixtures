@@ -36,9 +36,9 @@ Importer.execute = function(tables, additive){
       if(is_file && !table.match(/\/\.[^\/]*$/)){
         return fs.read(table)
             .then(function(contents){
-              table = table.match(/\/([^\/]*).json$/);
-              if(table){
-                table = table[1];
+              var tablename = table.match(/\/([^\/]*).json$/);
+              if(tablename){
+                table = tablename[1];
               }else{
                 console.log(table);
               }
