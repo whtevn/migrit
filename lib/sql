@@ -7,8 +7,12 @@ var mysql = require('mysql')
 
 sql = {
   connect: function(config, db){
+
     sql.config = config;
 
+    if(typeof sql.config.connections[db].port == "object"){
+       sql.config.connections[db].port =  sql.config.connections[db].port.oustide
+    }
     sql.connection = (sql.connection || mysql.createConnection(sql.config.connections[db]));
     return sql;
   }
