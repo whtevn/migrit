@@ -4,6 +4,7 @@
     , sql = require('./sql')
     , _  = require('underscore')
     , q  = require('q')
+    , color = require('color');
     ;
 
 Importer.print = function(config, database, name, additive, quiet){
@@ -11,7 +12,9 @@ Importer.print = function(config, database, name, additive, quiet){
   var filepath  = config.__basedir+(config.fixtures)+'/'+name+'/'
     , msg = "beginning "+name+" import into "+database+" database"
     ;
-  console.log(msg.cyan);
+  if(!quiet){
+    console.log(msg.cyan);
+  }
   Importer.config = config;
   sql.connect(config, database);
   return fs.listTree(filepath)
@@ -19,7 +22,9 @@ Importer.print = function(config, database, name, additive, quiet){
       return Importer.execute(path, additive);
     })
     .then(function(){
-      console.log("import complete".cyan);
+      if(!quiet){
+        console.log("import complete".cyan);
+      }
       return(sql.connection);
     })
     .catch(function(err){
