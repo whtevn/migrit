@@ -5,32 +5,32 @@
     , "database": "projectName_dev"
     , "port": "3306"
     , "user": "root"
-    , "pass": ""
+    , "password": ""
     }
   , "testing": {
       "host": "127.0.0.1"
     , "database": "projectName_test"
     , "port": "3306"
     , "user": "root"
-    , "pass": ""
+    , "password": ""
     }
   , "staging": {
       "host": ""
     , "port": ""
     , "user": ""
-    , "pass": ""
+    , "password": ""
     }
   , "beta": {
       "host": ""
     , "port": ""
     , "user": ""
-    , "pass": ""
+    , "password": ""
     }
   , "production": {
       "host": ""
     , "port": ""
     , "user": ""
-    , "pass": ""
+    , "password": ""
     }
   }
 }
