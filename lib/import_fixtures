@@ -10,7 +10,7 @@
 Importer.print = function(config, database, name, additive, quiet){
   Importer._quiet = quiet;
   var filepath  = config.__basedir+(config.fixtures)+'/'+name+'/'
-    , msg = "beginning "+name+" import into "+database+" database"
+    , msg = "\nbeginning "+name+" import into "+database+" database"
     ;
   if(!quiet){
     console.log(msg.cyan);
