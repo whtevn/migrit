@@ -8,6 +8,7 @@ var migrit    = require('../migrit')
   , importer  = migrit.importer
   , sql       = migrit.sql
   , config    = migrit.config
+  , mongo     = migrit.mongo
   , prompt    = require('prompt')
   , args      = require('yargs')
   , argv      = args.argv
@@ -68,6 +69,7 @@ config.then(function(c){
 
   switch(argv._[0]){
     case undefined:
+      if(c.mongo) throw("No schema for mongo resources");
       argv = args
         .usage("Usage: $0 --title 'title for migration'")
         .alias('t', 'title')
@@ -94,6 +96,7 @@ config.then(function(c){
       }
       break;
     case 'up':
+      if(c.mongo) throw("No schema for mongo resources");
       argv = args
         .usage("Usage: $0 up --max 12345 --database connection_name")
         .alias('m', 'max')
@@ -130,6 +133,7 @@ config.then(function(c){
         }
       break;
     case 'down':
+      if(c.mongo) throw("No schema for mongo resources");
       argv = args
         .usage("Usage: $0 down --max 12345 --database connection_name")
         .alias('m', 'min')
@@ -177,7 +181,14 @@ config.then(function(c){
         .describe('f', 'name of fixture set')
         .describe('d', 'database connection name')
         .argv;
-      exporter(c, argv.d, argv.f);
+      if(c.connections[argv.d].mongo){
+        mongo.export(c, argv.d, argv.f)
+          .then(function(db){
+            db.close();
+          })
+      }else{
+        exporter(c, argv.d, argv.f);
+      }
       break;
     case 'import':
       argv = args
@@ -191,10 +202,15 @@ config.then(function(c){
         .describe('d', 'database connection name')
         .argv;
       additive = argv.a;
-      importer(c, argv.d, argv.f, additive)
-        .then(function(connection){
-          connection.end();
-        });
+      if(c.connections[argv.d].mongo){
+        // import mongo
+        mongo.import(c, argv.d, argv.f, additive);
+      }else{
+        importer(c, argv.d, argv.f, additive)
+          .then(function(connection){
+            connection.end();
+          });
+      }
       break;
     case 'init':
       break

@@ -1,18 +1,16 @@
 {
   "connections": {
     "local": {
-      "host": "127.0.0.1"
-    , "database": "projectName_dev"
-    , "port": "3306"
-    , "user": "root"
-    , "password": ""
+      "mongo": true
+    , "host": "127.0.0.1"
+    , "database": "projectName_test"
+    , "port": "27017"
     }
   , "testing": {
-      "host": "127.0.0.1"
+      "mongo": true
+    , "host": "127.0.0.1"
     , "database": "projectName_test"
-    , "port": "3306"
-    , "user": "root"
-    , "password": ""
+    , "port": "27017"
     }
   , "staging": {
       "host": ""
