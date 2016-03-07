@@ -2,14 +2,14 @@
   "connections": {
     "local": {
       "mongo": true
-    , "host": "127.0.0.1"
-    , "database": "projectName_test"
+    , "host": "192.168.99.100"
+    , "database": "core_widget"
     , "port": "27017"
     }
   , "testing": {
       "mongo": true
-    , "host": "127.0.0.1"
-    , "database": "projectName_test"
+    , "host": "192.168.99.100"
+    , "database": "core_widget"
     , "port": "27017"
     }
   , "staging": {
