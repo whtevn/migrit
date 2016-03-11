@@ -224,4 +224,6 @@ config.then(function(c){
   console.log(err.stack);
 
   console.log("\nHave you run `migrit init` for this project?");
+  
+  process.exit(1);
 });
