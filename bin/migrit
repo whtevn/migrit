@@ -125,11 +125,13 @@ config.then(function(c){
               return up(c, argv.d, to_state);
             })
             .catch(function(err){
-              console.log(err);
-              console.log(err.stack);
+              process.exit(1);
             })
         }else{
-          up(c, argv.d, argv.m);
+          up(c, argv.d, argv.m)
+            .catch(function(err){
+              process.exit(1);
+            })
         }
       break;
     case 'down':
@@ -163,11 +165,13 @@ config.then(function(c){
               return down(c, argv.d, to_state);
             })
             .catch(function(err){
-              console.log(err);
-              console.log(err.stack);
+              process.exit(1);
             })
         }else{
-          down(c, argv.d, argv.m);
+          down(c, argv.d, argv.m)
+            .catch(function(err){
+              process.exit(1);
+            })
         }
 
       break;
@@ -209,7 +213,10 @@ config.then(function(c){
         importer(c, argv.d, argv.f, additive)
           .then(function(connection){
             connection.end();
-          });
+          })
+          .catch(function(err){
+             process.exit(1);
+           })
       }
       break;
     case 'init':
