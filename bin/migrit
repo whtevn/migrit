@@ -208,7 +208,10 @@ config.then(function(c){
       additive = argv.a;
       if(c.connections[argv.d].mongo){
         // import mongo
-        mongo.import(c, argv.d, argv.f, additive);
+        mongo.import(c, argv.d, argv.f, additive)
+          .catch(function(err){
+             process.exit(1);
+           })
       }else{
         importer(c, argv.d, argv.f, additive)
           .then(function(connection){
