@@ -26,4 +26,14 @@ migrit.config    = config.get('database-connections.json', {
   }
 );
 
+migrit.find = function(config_file){
+  return  config.get(config_file, {
+            state_table: 'database_state'
+          , state_field: 'timestamp'
+          , migrations : 'migrations'
+          , fixtures   : 'fixtures'
+          });
+
+}
+
 module.exports = migrit;
