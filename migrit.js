@@ -26,12 +26,12 @@ migrit.config    = config.get('database-connections.json', {
   }
 );
 
-migrit.find = function(config_file){
+migrit.find = function(config_file, opts){
   return  config.get(config_file, {
-            state_table: 'database_state'
-          , state_field: 'timestamp'
-          , migrations : 'migrations'
-          , fixtures   : 'fixtures'
+            state_table: (opts.state_table||'database_state')
+          , state_field: (opts.state_field||'timestamp')
+          , migrations : (opts.migrations||'migrations')
+          , fixtures   : (opts.fixtures||'fixtures')
           });
 
 }
