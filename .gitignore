@@ -1,3 +1,5 @@
 node_modules
 etc/migrations
 etc/fixtures
+lib/importer.js
+*.swp
